@@ -16,7 +16,7 @@ Need help in analyzing  Windows shellcode or attack coming from **Metasploit Fra
 
 Here a quick demo:
 
-[<img src="https://asciinema.org/a/ln8tkJH7bOhACFRMdnPmk2i1o.svg" alt="asciicast" style="zoom:33%;" />](https://asciinema.org/a/ln8tkJH7bOhACFRMdnPmk2i1o)
+[<img src="https://asciinema.org/a/ln8tkJH7bOhACFRMdnPmk2i1o.svg" alt="asciicast" width="300" style="zoom:33%;" />](https://asciinema.org/a/ln8tkJH7bOhACFRMdnPmk2i1o)
 
 ## Install
 
