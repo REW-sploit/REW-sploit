@@ -1,6 +1,6 @@
 
 
-<img src="https://github.com/REW-sploit/Rs-files/blob/main/img/REW-sploit-Logo.png?raw=true|" alt="Logo" style="zoom:30%;" />
+<img src="https://github.com/REW-sploit/Rs-files/blob/main/img/REW-sploit-Logo.png?raw=true|" width="200" alt="Logo" style="zoom:30%;" />
 
 # REW-sploit
 
