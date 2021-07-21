@@ -20,7 +20,7 @@ Here a quick demo:
 
 ## Install
 
-Installation is very easy. I strongly suggest to create  a specific Python Env for it
+Installation is very easy. I strongly suggest to create  a specific Python Env for it:
 
 ```
 # python -m venv <your-env-path>/rew-sploit
@@ -32,14 +32,14 @@ Installation is very easy. I strongly suggest to create  a specific Python Env f
 # ./rew-sploit
 ```
 
-or, you can use the Docker
+or, you can use the Docker:
 
 ```
 # docker build -t rew-sploit/rew-sploit .
 # docker run --rm --name rew-sploit -v /tmp:/tmp rew-sploit/rew-sploit
 ```
 
-You see an `apply_patch`.py script in the installation sequence. This is required to apply a small patch to the `speakeasy-emulator` (https://github.com/fireeye/speakeasy/) to make it compatible with `REW-sploit`. You can easily revert the patch with `./apply_patch -r` if required.
+You see an `apply_patch.py` script in the installation sequence. This is required to apply a small patch to the `speakeasy-emulator` (https://github.com/fireeye/speakeasy/) to make it compatible with `REW-sploit`. You can easily revert the patch with `./apply_patch.py -r` if required.
 
 Optionally, you can also install Cobalt-Strike Parser:
 
@@ -84,7 +84,7 @@ You can find several examples on the current capabilities here below:
 
 In some cases emulation was simply breaking, for different reasons. In some cases obfuscation was using some techniques that was confusing the emulation engine. So I implemented some ad-hoc fixups (you can enable them by using `-F` option of the `emulate_payload` command). Fixups are implemented in `modules/emulate_fixups.py`. Currently we have
 
-Unicorn issue #1092
+Unicorn issue #1092:
 
 ```
     #
@@ -98,7 +98,7 @@ Unicorn issue #1092
     #
 ```
 
-FPU emulation issue
+FPU emulation issue:
 
 ```
     #
@@ -110,7 +110,7 @@ FPU emulation issue
     #
 ```
 
-Trap Flag evasion
+Trap Flag evasion:
 
 ```
     #
