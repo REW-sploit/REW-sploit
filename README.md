@@ -4,11 +4,11 @@
 
 # REW-sploit
 
-**<u>NOTE</u>:** the tool will be released just before the Black-Hat USA 2021, for the Arsenal presentation. 
+**NOTE: the tool will be released just before the Black-Hat USA 2021, for the Arsenal presentation.**
 
 https://www.blackhat.com/us-21/arsenal/schedule/index.html#rew-sploit-dissecting-metasploit-attacks-24086
 
-
+------
 
 Need help in analyzing  Windows shellcode or attack coming from **Metasploit Framework** or **Cobalt Strike** (or may be also other malicious or obfuscated code)? Do you need to automate tasks with simple scripting? Do you want help to decrypt **MSF** generated traffic by extracting keys from payloads?
 
