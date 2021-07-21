@@ -1,6 +1,6 @@
 
 
-<img src="https://github.com/REW-sploit/Rs-files/blob/main/img/REW-sploit-Logo.png?raw=true|" alt="Logo" style="zoom:50%;" />
+<img src="https://github.com/REW-sploit/Rs-files/blob/main/img/REW-sploit-Logo.png?raw=true|" alt="Logo" style="zoom:30%;" />
 
 # REW-sploit
 
@@ -74,7 +74,7 @@ You can find several examples on the current capabilities here below:
 - [ChaCha Keys Extraction](https://asciinema.org/a/01oMaPMG0BmLkPhXkIMNvSO4c?speed=2)
 - [Meterpreter session Decryption (no RSA)](https://asciinema.org/a/Q8zZ8Ri7ZPzpBOZRTh9eZpzWi?speed=2)
 - [Cobalt-Strike beacon Emulation](https://asciinema.org/a/ps4VdIqY71W786j9lOAz9taOp?speed=10)
-- [Cobalt-Strike config Extraction](https://asciinema.org/a/ps4VdIqY71W786j9lOAz9taOp?speed=10)
+- [Cobalt-Strike config Extraction](https://asciinema.org/a/1hGjmn9hgx5i2CAZFePpbaI70?speed=5)
 - [Debugging options](https://asciinema.org/a/kIhOo2jKjOBTcxh8VrU0UzkXi)
 - [Dumping Threads](https://asciinema.org/a/5SeKKodDXl79vceM7eXjsQJil?speed=2)
 
