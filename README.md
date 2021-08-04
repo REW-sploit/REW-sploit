@@ -32,13 +32,6 @@ Installation is very easy. I strongly suggest to create  a specific Python Env f
 # ./rew-sploit
 ```
 
-or, you can use the Docker:
-
-```
-# docker build -t rew-sploit/rew-sploit .
-# docker run --rm --name rew-sploit -v /tmp:/tmp rew-sploit/rew-sploit
-```
-
 You see an `apply_patch.py` script in the installation sequence. This is required to apply a small patch to the `speakeasy-emulator` (https://github.com/fireeye/speakeasy/) to make it compatible with `REW-sploit`. You can easily revert the patch with `./apply_patch.py -r` if required.
 
 Optionally, you can also install Cobalt-Strike Parser:
