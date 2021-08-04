@@ -127,3 +127,7 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# REW-sploit
+samples/*.bin
+samples/*.pcap

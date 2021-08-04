@@ -4,7 +4,7 @@
 
 # REW-sploit
 
-**NOTE: the tool will be released just before the Black-Hat USA 2021, for the Arsenal presentation.**
+**NOTE: The tool will be presented today 04-Aug-2021 at Black-Hat Arsenal USA 2021**
 
 https://www.blackhat.com/us-21/arsenal/schedule/index.html#rew-sploit-dissecting-metasploit-attacks-24086
 

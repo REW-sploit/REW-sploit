@@ -1,0 +1,5 @@
+[35m(REW-sploit)<< [39memulate_payload -P samples/payload_chacha.bin
+[+] Starting emulation
+[+] Recovered Chacha key b'94263052ac3ef5be10a83ea2aba8ec88'
+[+] Recovered Chacha nonce b'17a5c7c16ec9'
+[+] Emulation ended

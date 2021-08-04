@@ -1,0 +1,5 @@
+[35m(REW-sploit)<< [39memulate_payload -P samples/payload_tcp_rc4_shikata.bin -F
+[+] Starting emulation
+[+] XOR constant for payload length: b'\xd3\xa2\x05\xa0' - 0xd3a205a0
+[+] Recovered RC4 key: b'4*h~\xa2\xd0S`\xc9S\x10z\xcb\xe8>\x08' - 0x342a687ea2d05360c953107acbe83e08
+[+] Emulation ended
