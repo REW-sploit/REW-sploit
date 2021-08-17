@@ -446,6 +446,11 @@
                     "path": "C:\\Windows\\system32\\ole32.dll"
                 },
                 {
+                    "name": "oleaut32",
+                    "base_addr": "0x85500000",
+                    "path": "C:\\Windows\\system32\\oleaut32.dll"
+                },
+                {
                     "name": "setupapi",
                     "base_addr": "0x55500000",
                     "path": "C:\\Windows\\system32\\setupapi.dll"

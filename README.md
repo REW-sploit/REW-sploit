@@ -87,6 +87,29 @@ You can find several examples on the current capabilities here below:
 
 
 
+## Donut support
+
+You know for sure the [Donut](https://github.com/TheWover/donut) package, able to create PIC from EXE, DLL, VBScript and JScript.
+
+`Donut`, in order to evade detection, uses a API exports enumeration based on hashes computed on every API name, as many PIC do. This is very CPU intensive (especially in an emulated environment like `REW-sploit`). 
+So, knowing which are the API needed by `Donut` stub (you can get them in [donut.c](https://github.com/TheWover/donut/blob/master/donut.c)), I implemented a shortcut to avoid the hash computation if the API is not is the used list.
+This makes the emulation a lot faster (even if it takes some minutes).
+
+Also, in order to be able to correctly complete the emulation, you need to give to `Speakeasy` the DLL to get the complete exports. To do it copy the following DLLs
+
+````
+kernel32.dll
+mscoree.dll
+ole32.dll
+oleaut32.dll
+wininet.dll
+
+```
+
+in the `Speakeasy` folder `winenv/decoys/amd64` and/or `winenv/decoys/x86` (see [Speakeasy](https://github.com/fireeye/speakeasy#readme) README for details). If you don't need them, don't leave the DLLs there, since they slow down the emulation.
+
+
+
 ## Fixups
 
 In some cases emulation was simply breaking, for different reasons. In some cases obfuscation was using some techniques that was confusing the emulation engine. So I implemented some ad-hoc fixups (you can enable them by using `-F` option of the `emulate_payload` command). Fixups are implemented in `modules/emulate_fixups.py`. Currently we have

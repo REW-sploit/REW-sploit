@@ -1,3 +1,9 @@
+"""
+
+Define the constants for Meterpreter decoding
+
+"""
+
 ########################################
 # MSF constants
 ########################################

@@ -101,3 +101,47 @@ yara_encrypted_shell_reverse_tcp_64 = 'rule encrypted_shell_reverse_tcp {       
 
 rule_encrypted_shell_reverse_tcp_64 = yara.compile(
     source=yara_encrypted_shell_reverse_tcp_64)
+
+#
+# Name         : [Donut] Donut support 32 bit
+# Search for   : push dword ptr ss:[esp+204]
+#                add ecx,esi
+#                push ecx
+#                call 0x....
+# Used for     : with this instructions I implemented a shortcut to avoid to
+#                hash all the exports in the loaded DLL, I just resolve the needed ones.
+#                In this way the emulation of Donut PIC takes a lot less
+# Architecture : x32
+#
+yara_donut_hash_shortcut_32 = 'rule donut_hash_shortcut_32 {                \
+                               strings:                                     \
+                                   $opcodes_1 = {                           \
+                                                  ff b4 24 04 02 00 00      \
+                                                  03 CE                     \
+                                                  51                        \
+                                                  e8 dc 11 00 00 }          \
+                               condition:                                   \
+                                   $opcodes_1 }'
+
+rule_donut_hash_shortcut_32 = yara.compile(source=yara_donut_hash_shortcut_32)
+
+#
+# Name         : [Donut] Donut support 64 bit
+# Search for   : mov rax,qword ptr ss:[rbp+1F8]
+#                add rax,rdx
+#                mov qword ptr ss:[rbp+178],rax
+# Used for     : with this instructions I implemented a shortcut to avoid to
+#                hash all the exports in the loaded DLL, I just resolve the needed ones.
+#                In this way the emulation of Donut PIC takes a lot less
+# Architecture : x64
+#
+yara_donut_hash_shortcut_64 = 'rule donut_hash_shortcut_64 {                \
+                               strings:                                     \
+                                   $opcodes_1 = {                           \
+                                                  48 8b 85 f8 01 00 00      \
+                                                  48 01 d0                  \
+                                                  48 89 85 78 01 00 00 }    \
+                               condition:                                   \
+                                   $opcodes_1 }'
+
+rule_donut_hash_shortcut_64 = yara.compile(source=yara_donut_hash_shortcut_64)

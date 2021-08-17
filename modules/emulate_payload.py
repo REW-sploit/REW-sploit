@@ -33,6 +33,7 @@ from modules.pcap_helper import *
 from modules.emulate_rules import *
 from modules.emulate_fixups import *
 from modules.pe_helper import *
+from modules.donut import *
 
 #
 # Parse also extras folder for additional packages
@@ -55,6 +56,7 @@ init(autoreset=True)
 
 debug = 0
 enable_fixups = True
+donut_stub = False
 
 rc4_key = b''
 
@@ -235,6 +237,7 @@ def hook_code_32(emu, begin, end, ctx):
 
     global rc4_key
     global enable_fixups
+    global donut_stub
 
     logger = get_logger()
     # Get cmd2 obj for poutput
@@ -307,6 +310,23 @@ def hook_code_32(emu, begin, end, ctx):
         opcodes_buffer.clear()
         emu.exit_process()
 
+    # Shortcut for Donut PIC code
+    elif rule_donut_hash_shortcut_32.match(data=opcodes_data):
+
+        if donut_stub == False:
+            cmd2.poutput(
+                Fore.YELLOW + '[*] Donut stub detected' + Style.RESET_ALL)
+            donut_stub = True
+
+        apiname = emu.mem_read(emu.reg_read(
+            e_arch.X86_REG_ECX), 30).split(b'\x00')[0]
+
+        if apiname not in donut_api_imports:
+            # Skip the slow export hash name computation
+            emu.reg_write(e_arch.X86_REG_EIP, begin + 5)
+
+        opcodes_buffer.clear()
+
     ###################################
     # YARA RULES MATCHING SECTION END #
     ###################################
@@ -341,6 +361,7 @@ def hook_code_64(emu, begin, end, ctx):
     """
 
     global rc4_key
+    global donut_stub
 
     logger = get_logger()
     # Get cmd2 obj for poutput
@@ -408,6 +429,23 @@ def hook_code_64(emu, begin, end, ctx):
 
         opcodes_buffer.clear()
         emu.exit_process()
+
+    # Shortcut for Donut PIC code
+    elif rule_donut_hash_shortcut_64.match(data=opcodes_data):
+
+        if donut_stub == False:
+            cmd2.poutput(
+                Fore.YELLOW + '[*] Donut stub detected' + Style.RESET_ALL)
+            donut_stub = True
+
+        apiname = emu.mem_read(emu.reg_read(
+            e_arch.AMD64_REG_RAX), 30).split(b'\x00')[0]
+
+        if apiname not in donut_api_imports:
+            # Skip the slow export hash name computation
+            emu.reg_write(e_arch.AMD64_REG_RIP, begin + 29)
+
+        opcodes_buffer.clear()
 
     ###################################
     # YARA RULES MATCHING SECTION END #
