@@ -103,7 +103,6 @@ mscoree.dll
 ole32.dll
 oleaut32.dll
 wininet.dll
-
 ```
 
 in the `Speakeasy` folder `winenv/decoys/amd64` and/or `winenv/decoys/x86` (see [Speakeasy](https://github.com/fireeye/speakeasy#readme) README for details). If you don't need them, don't leave the DLLs there, since they slow down the emulation.
