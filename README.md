@@ -97,7 +97,7 @@ This makes the emulation a lot faster (even if it takes some minutes).
 
 Also, in order to be able to correctly complete the emulation, you need to give to `Speakeasy` the DLL to get the complete exports. To do it copy the following DLLs
 
-````
+```
 kernel32.dll
 mscoree.dll
 ole32.dll
