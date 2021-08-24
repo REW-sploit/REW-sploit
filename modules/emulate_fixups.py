@@ -62,7 +62,7 @@ def fixups_unicorn(emu, begin, end, mnem, op, arch):
                     manual_xor(emu, r.group(1), addr, xorval)
                     # Skip instruction
                     emu.reg_write(e_arch.X86_REG_EIP if arch == 'x86' else e_arch.AMD64_REG_RIP,
-                                  begin + 3)
+                                  begin + end)
                     print('[!] Fixup #1 applied (self-mod code)')
         except:
             pass
