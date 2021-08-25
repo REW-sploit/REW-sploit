@@ -24,6 +24,8 @@ from colorama import Fore, Back, Style
 from colorama import init
 from socket import inet_ntoa, ntohs
 from Crypto.Cipher import ARC4
+from os import access, R_OK
+from os.path import isfile
 
 import speakeasy
 import speakeasy.winenv.arch as e_arch
@@ -591,6 +593,9 @@ def start_speakeasy(self, kwargs, cfg):
 
     debug = dbg
     enable_fixups = fixups
+
+    assert isfile(payload) and access(payload, R_OK), \
+        "File '{}' not existing or not readable".format(payload)
 
     se = speakeasy.Speakeasy(config=cfg, logger=get_logger())
     arch = arch.lower()
