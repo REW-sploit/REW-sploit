@@ -1,7 +1,7 @@
 """
-emulate_helper.py
+emulate_fixups.py
 
-Helper functions for emualtion.
+Fixups to be applied to fix some known emulation failures.
 
 """
 
@@ -15,10 +15,11 @@ fpu_instructions = ['fld1', 'fldl2t', 'fldl2e', 'fldpi', 'fldlg2', 'fldln2',
                     'fcmovnb', 'fcmovne', 'fcmovnbe', 'fcmovnu', 'ffree', 'fnop',
                     'fabs', 'fdecstp', 'fincstp', 'fxam']
 fpu_addr = 0
-
+fixup_4_apply = True
 
 def fixups_unicorn(emu, begin, end, mnem, op, arch):
     global fpu_addr
+    global fixup_4_apply
 
     """
     Implements some hacks to fix/workoaround some issues in unicorn emulation
@@ -140,6 +141,23 @@ def fixups_unicorn(emu, begin, end, mnem, op, arch):
 
             print('[!] Fixup #3 applied (Trap Flag evasion)')
 
+    #
+    # Fixup #4
+    # Stack too small (not enough values stored)
+    # 
+    # Some obfuscator/evasion technique try to access some values on the stack
+    # (like for example SGN https://github.com/EgeBalci/sgn.git):
+    #
+    #     cmovne ax, word ptr [esp + 0xfa]
+    #
+    # In this case the emulation fails with an "invalid_read" since ESP is too
+    # close to the top of the stack. This creates some 'fake' values.
+    # This apply a fixup on this
+    #
+    if fixup_4_apply == True:
+        emu.set_stack_ptr(emu.get_stack_ptr() - 0xFF)
+        print('[!] Fixup #4 applied (Too few values in the stack)')
+        fixup_4_apply = False
 
 def extract_addr(emu, ref):
     """

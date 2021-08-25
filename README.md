@@ -109,6 +109,12 @@ in the `Speakeasy` folder `winenv/decoys/amd64` and/or `winenv/decoys/x86` (see 
 
 
 
+##  EgeBalci/sgn
+
+This [Shikata Ga Nai](https://github.com/EgeBalci/sgn.git) implementation works just fine most of the times. In some cases it fails with an `invalid read`, so I implemented `Fixup #4` for it. 
+
+
+
 ## Fixups
 
 In some cases emulation was simply breaking, for different reasons. In some cases obfuscation was using some techniques that was confusing the emulation engine. So I implemented some ad-hoc fixups (you can enable them by using `-F` option of the `emulate_payload` command). Fixups are implemented in `modules/emulate_fixups.py`. Currently we have
@@ -156,6 +162,23 @@ Trap Flag evasion:
     #
     # Any call to RDTSC with Trap Flag set will be intercepted and TF will
     # be cleared
+    #
+```
+
+Too few values on stack:
+
+```
+    #
+    # Fixup #4
+    # Stack too small (not enough values stored)
+    # 
+    # Some obfuscator/evasion technique try to access some values on the stack
+    # (like for example SGN https://github.com/EgeBalci/sgn.git):
+    #
+    #     cmovne ax, word ptr [esp + 0xfa]
+    #
+    # In this case the emulation fails with an "invalid_read" since ESP is too
+    # close to the top of the stack. This creates some 'fake' values.
     #
 ```
 
