@@ -114,6 +114,16 @@ in the `Speakeasy` folder `winenv/decoys/amd64` and/or `winenv/decoys/x86` (see 
 This [Shikata Ga Nai](https://github.com/EgeBalci/sgn.git) implementation works just fine most of the times. In some cases it fails with an `invalid read`, so I implemented `Fixup #4` for it. 
 
 
+## A couple of words about performance
+
+Obviously emulation slows down everything. Moreover, hooking every instruction in order to interact with the execution, make things even slower. In general this works fine with small shellcode, but have some issues with complex code. That's why I added an option to **turn off** hooking to speed up execution:
+
+```
+emulate_payload -P <path_to_filename> -U 0
+```
+
+In this way you can get a picture of what the emulated code is doing (with API tracking), but nothing else will be done (no fixups, no key extractions, etc). If you specify something different than `0` the hooking will be re-enabled when the `IP` (instruction pointer) will reach the specified address.
+
 
 ## Fixups
 

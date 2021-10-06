@@ -59,6 +59,7 @@ init(autoreset=True)
 debug = 0
 enable_fixups = True
 donut_stub = False
+enable_unhook = None
 
 rc4_key = b''
 
@@ -237,6 +238,18 @@ def hook_code_32(emu, begin, end, ctx):
         None
     """
 
+    # As a first thing, to avoid delays, check UnHook
+    global enable_unhook
+
+    if enable_unhook != None:
+        if enable_unhook == 0:
+            return
+        elif enable_unhook == begin:
+            enable_unhook = None
+            print(Fore.GREEN + '[+] Hook Enabled' + Style.RESET_ALL)
+        else:
+            return
+
     global rc4_key
     global enable_fixups
     global donut_stub
@@ -361,6 +374,18 @@ def hook_code_64(emu, begin, end, ctx):
     Returns:
         None
     """
+
+    # As a first thing, to avoid delays, check UnHook
+    global enable_unhook
+
+    if enable_unhook != None:
+        if enable_unhook == 0:
+            return
+        elif enable_unhook == begin:
+            enable_unhook = None
+            print(Fore.GREEN + '[+] Hook Enabled' + Style.RESET_ALL)
+        else:
+            return
 
     global rc4_key
     global donut_stub
@@ -579,6 +604,7 @@ def start_speakeasy(self, kwargs, cfg):
 
     global debug
     global enable_fixups
+    global enable_unhook
 
     ip = kwargs['ip'].replace('\'', '')
     port = kwargs['port']
@@ -587,6 +613,7 @@ def start_speakeasy(self, kwargs, cfg):
     arch = kwargs['arch'].replace('\'', '')  # 'x86'
     dbg = kwargs['debug']
     fixups = kwargs['fixups']
+    unhook = kwargs['unhook']
     thread = kwargs['thread']
     writefile = kwargs['writefile']
     exportname = kwargs['exportname']
@@ -594,8 +621,17 @@ def start_speakeasy(self, kwargs, cfg):
     debug = dbg
     enable_fixups = fixups
 
-    assert isfile(payload) and access(payload, R_OK), \
-        "File '{}' not existing or not readable".format(payload)
+    if not access(payload, R_OK):
+        self.poutput(
+            Fore.RED + '[!] Payload file existing or not readable ' + Style.RESET_ALL)
+        return
+    if unhook != None:
+        try:
+            enable_unhook = int(unhook.replace('\'', ''), base=16)
+        except:
+            self.poutput(
+                Fore.RED + '[!] Invalid address (must be Hex)' + Style.RESET_ALL)
+            return
 
     se = speakeasy.Speakeasy(config=cfg, logger=get_logger())
     arch = arch.lower()
@@ -608,7 +644,9 @@ def start_speakeasy(self, kwargs, cfg):
         # Set hooks
         se.add_code_hook(hook_code_64, ctx={'cmd2': self})
     else:
-        raise Exception('Unsupported architecture: %s' % arch)
+        self.poutput(
+            Fore.RED + '[!] Unsupported architecture' + Style.RESET_ALL)
+        return
 
     opcodes_buffer.clear()
     # se.add_mem_write_hook(hook_readmem)

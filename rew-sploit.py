@@ -9,7 +9,7 @@ import cmd2
 from cmd2 import style, fg, bg
 from colorama import Fore, Back, Style
 
-version = '0.3.1'
+version = '0.3.2'
 
 
 class RewSploit(cmd2.Cmd):
@@ -84,9 +84,9 @@ class RewSploit(cmd2.Cmd):
     #######################################
     emulate_payload_parser = argparse.ArgumentParser()
     emulate_payload_parser.add_argument('-P', '--payload', type=ascii, help='Payload binary file',
-                                        required=True)
+                                        required=True, metavar='<Filename>')
     emulate_payload_parser.add_argument('-f', '--file', type=ascii, help='PCAP file name',
-                                        default='')
+                                        default='', metavar='<Filename>')
     emulate_payload_parser.add_argument('-i', '--ip', type=ascii, help='Meterpreter C2 IP',
                                         default='0.0.0.0')
     emulate_payload_parser.add_argument('-p', '--port', type=int, help='Meterpreter C2 Port (default: 4444)',
@@ -97,12 +97,14 @@ class RewSploit(cmd2.Cmd):
                                         default=0)
     emulate_payload_parser.add_argument('-F', '--fixups', action='store_true', help='Enable Unicorn Fixups',
                                         default=False)
+    emulate_payload_parser.add_argument('-U', '--unhook', type=ascii, help='UnHook single step function forever (0) or until <Address> (in hex). Speeds up emulation',
+                                        default=None, metavar='0x<Address>')
     emulate_payload_parser.add_argument('-T', '--thread', action='store_true', help='Dump CreateThread API content from lpStartAddress',
                                         default=False)
     emulate_payload_parser.add_argument('-W', '--writefile', action='store_true', help='Dump WriteFile API content',
                                         default=False)
     emulate_payload_parser.add_argument('-E', '--exportname', type=ascii, help='DLL Export to emulate',
-                                        default=None)
+                                        default=None, metavar='<DLLExportame>')
 
     @cmd2.with_category(REWSPLOIT_CATEGORY)
     @cmd2.with_argparser(emulate_payload_parser)
@@ -110,12 +112,18 @@ class RewSploit(cmd2.Cmd):
         """
         Emulate payload to decode encryption keys and decode the payload from PCAP
         """
+
+        if args.fixups == True and args.unhook != None:
+            self.poutput(
+                Fore.RED + '[!] Options -F and -U are mutually exclusive' + Style.RESET_ALL)
+            return
+
         plugin = __import__('modules.emulate_payload')
         plugin.emulate_payload.module_main(self=self, ip=args.ip, port=args.port,
                                            payload=args.payload, file=args.file, arch=args.arch,
                                            debug=args.debug, fixups=args.fixups,
-                                           thread=args.thread, writefile=args.writefile,
-                                           exportname=args.exportname)
+                                           unhook=args.unhook, thread=args.thread,
+                                           writefile=args.writefile, exportname=args.exportname)
         return
 
 
