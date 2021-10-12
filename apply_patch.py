@@ -31,7 +31,7 @@ def apply_all(folder, revert):
         
         print('OK: %s patched successfully' % (destination))
     except:
-        print('KO: Error patching %s' % (destionation))
+        print('KO: Error patching %s' % (destination))
 
 if __name__ == '__main__':
 
