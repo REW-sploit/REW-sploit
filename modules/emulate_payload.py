@@ -623,7 +623,7 @@ def start_speakeasy(self, kwargs, cfg):
 
     if not access(payload, R_OK):
         self.poutput(
-            Fore.RED + '[!] Payload file existing or not readable ' + Style.RESET_ALL)
+            Fore.RED + '[!] Payload file not existing or not readable ' + Style.RESET_ALL)
         return
     if unhook != None:
         try:
