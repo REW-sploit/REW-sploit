@@ -122,7 +122,7 @@ Obviously emulation slows down everything. Moreover, hooking every instruction i
 emulate_payload -P <path_to_filename> -U 0
 ```
 
-In this way you can get a picture of what the emulated code is doing (with API tracking), but nothing else will be done (no fixups, no key extractions, etc). If you specify something different than `0` the hooking will be re-enabled when the `IP` (instruction pointer) will reach the specified address.
+In this way you can get a picture of what the emulated code is doing (with API tracking), but nothing else will be done (no fixups, no key extractions, etc). If you specify something different than `0` the hooking will be re-enabled when the `IP` (instruction pointer) will reach the specified address (fixups will be applied from the same address).
 
 
 ## Fixups
