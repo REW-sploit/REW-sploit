@@ -15,12 +15,10 @@ fpu_instructions = ['fld1', 'fldl2t', 'fldl2e', 'fldpi', 'fldlg2', 'fldln2',
                     'fcmovnb', 'fcmovne', 'fcmovnbe', 'fcmovnu', 'ffree', 'fnop',
                     'fabs', 'fdecstp', 'fincstp', 'fxam']
 fpu_addr = 0
-fixup_4_apply = True
+current_thread = None
 
-def fixups_unicorn(emu, begin, end, mnem, op, arch):
-    global fpu_addr
-    global fixup_4_apply
 
+def fixups_unicorn(emu, begin, end, mnem, op, arch, entry_point):
     """
     Implements some hacks to fix/workoaround some issues in unicorn emulation
 
@@ -31,10 +29,13 @@ def fixups_unicorn(emu, begin, end, mnem, op, arch):
         mnem: mnemonic codes
         op: opcodes
         arch: architecture
+        entry_point: module/shellcode entry point
 
     Returns:
         None
     """
+    global fpu_addr
+    global current_thread
 
     #
     # Fixup #1
@@ -144,7 +145,7 @@ def fixups_unicorn(emu, begin, end, mnem, op, arch):
     #
     # Fixup #4
     # Stack too small (not enough values stored)
-    # 
+    #
     # Some obfuscator/evasion technique try to access some values on the stack
     # (like for example SGN https://github.com/EgeBalci/sgn.git):
     #
@@ -152,12 +153,13 @@ def fixups_unicorn(emu, begin, end, mnem, op, arch):
     #
     # In this case the emulation fails with an "invalid_read" since ESP is too
     # close to the top of the stack. This creates some 'fake' values.
-    # This apply a fixup on this
+    # The fixup is applied on entry-point or at each thread start.
     #
-    if fixup_4_apply == True:
+    if begin == entry_point or (current_thread != None and emu.curr_thread != current_thread):
+        current_thread = emu.curr_thread
         emu.set_stack_ptr(emu.get_stack_ptr() - 0xFF)
         print('[!] Fixup #4 applied (Too few values in the stack)')
-        fixup_4_apply = False
+
 
 def extract_addr(emu, ref):
     """
