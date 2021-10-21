@@ -60,6 +60,7 @@ debug = 0
 enable_fixups = True
 donut_stub = False
 enable_unhook = None
+entry_point = 0
 
 rc4_key = b''
 
@@ -237,6 +238,7 @@ def hook_code_32(emu, begin, end, ctx):
     Returns:
         None
     """
+    global entry_point
 
     # As a first thing, to avoid delays, check UnHook
     global enable_unhook
@@ -247,6 +249,8 @@ def hook_code_32(emu, begin, end, ctx):
         elif enable_unhook == begin:
             enable_unhook = None
             print(Fore.GREEN + '[+] Hook Enabled' + Style.RESET_ALL)
+            # Set entry-point when hoos starts, needed for fixups
+            entry_point = begin
         else:
             return
 
@@ -265,7 +269,7 @@ def hook_code_32(emu, begin, end, ctx):
     opcodes_data = b''.join(opcodes_buffer)
 
     if enable_fixups == True:
-        fixups_unicorn(emu, begin, end, mnem, op, 'x86')
+        fixups_unicorn(emu, begin, end, mnem, op, 'x86', entry_point)
 
     #####################################
     # YARA RULES MATCHING SECTION START #
@@ -374,6 +378,7 @@ def hook_code_64(emu, begin, end, ctx):
     Returns:
         None
     """
+    global entry_point
 
     # As a first thing, to avoid delays, check UnHook
     global enable_unhook
@@ -384,6 +389,8 @@ def hook_code_64(emu, begin, end, ctx):
         elif enable_unhook == begin:
             enable_unhook = None
             print(Fore.GREEN + '[+] Hook Enabled' + Style.RESET_ALL)
+            # Set entry-point when hoos starts, needed for fixups
+            entry_point = begin
         else:
             return
 
@@ -401,7 +408,7 @@ def hook_code_64(emu, begin, end, ctx):
     opcodes_data = b''.join(opcodes_buffer)
 
     if enable_fixups == True:
-        fixups_unicorn(emu, begin, end, mnem, op, 'x64')
+        fixups_unicorn(emu, begin, end, mnem, op, 'x64', entry_point)
 
     #####################################
     # YARA RULES MATCHING SECTION START #
@@ -697,7 +704,10 @@ def start_shellcode(self, payload, se, arch):
     Returns:
         None
     """
+    global entry_point
+
     sc_addr = se.load_shellcode(payload, arch)
+    entry_point = sc_addr
 
     # Check for CobaltStrike
     if is_cobaltstrike(se.mem_read(sc_addr, 0x500)) == True:
@@ -731,8 +741,10 @@ def start_exe(self, payload, se, arch):
     Returns:
         None
     """
+    global entry_point
 
     module = se.load_module(payload)
+    entry_point = module.base + module.ep
 
     # Start emulation
     self.poutput(Fore.GREEN + '[+] Starting emulation' + Style.RESET_ALL)
@@ -754,6 +766,7 @@ def start_dll(self, payload, se, arch, exportname):
     Returns:
         None
     """
+    global entry_point
 
     module = se.load_module(payload)
 
@@ -777,6 +790,7 @@ def start_dll(self, payload, se, arch, exportname):
             if exp.name == exportname.strip('\''):
                 self.poutput(
                     Fore.GREEN + '[+] DLL Export: ' + exp.name + Style.RESET_ALL)
+                entry_point = exp.address
                 se.call(exp.address, [arg0, arg1])
 
     self.poutput(Fore.GREEN + '[+] Emulation ended' + Style.RESET_ALL)

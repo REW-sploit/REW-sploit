@@ -113,11 +113,6 @@ class RewSploit(cmd2.Cmd):
         Emulate payload to decode encryption keys and decode the payload from PCAP
         """
 
-        if args.fixups == True and args.unhook != None:
-            self.poutput(
-                Fore.RED + '[!] Options -F and -U are mutually exclusive' + Style.RESET_ALL)
-            return
-
         plugin = __import__('modules.emulate_payload')
         plugin.emulate_payload.module_main(self=self, ip=args.ip, port=args.port,
                                            payload=args.payload, file=args.file, arch=args.arch,
