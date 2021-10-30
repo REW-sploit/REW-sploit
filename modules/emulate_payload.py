@@ -3,9 +3,7 @@ REW-sploit
 
 emulate_payload
 
-This module is able to identify if a specific flow, identified by
-IP and PORT (intended as IP of the Meterpreter C2) is a Meterpreter session
-and it tries to decrypt it if possible
+Functions to emulate code (EXE, DLL or shellcode) and inspect it.
 
 """
 
@@ -23,7 +21,6 @@ import collections
 from colorama import Fore, Back, Style
 from colorama import init
 from socket import inet_ntoa, ntohs
-from Crypto.Cipher import ARC4
 from os import access, R_OK
 from os.path import isfile
 
@@ -31,11 +28,13 @@ import speakeasy
 import speakeasy.winenv.arch as e_arch
 import speakeasy.winenv.defs.winsock.ws2_32 as wstypes
 
-from modules.pcap_helper import *
+import modules.emulate_config as cfg 
+#from modules.emulate_config import *
 from modules.emulate_rules import *
 from modules.emulate_fixups import *
 from modules.pe_helper import *
 from modules.donut import *
+from modules.emulate_helper import *
 
 #
 # Parse also extras folder for additional packages
@@ -60,7 +59,6 @@ debug = 0
 enable_fixups = True
 donut_stub = False
 enable_unhook = None
-entry_point = 0
 
 rc4_key = b''
 
@@ -69,7 +67,6 @@ rc4_key = b''
 # Keep this into consideration when creating rules
 #
 opcodes_buffer = collections.deque(maxlen=5)
-
 
 def get_logger():
     """
@@ -103,21 +100,21 @@ def hook_CreateThread(emu, api_name, func, params):
         Result of the called API
     """
 
-    _, _, entry_point, _, _, _ = params
+    _, _, ep, _, _, _ = params
 
     # Try to access all the memory from the entry_point
     # until an error is triggered
     i = 0
     while 1 == 1:
         try:
-            _ = emu.mem_read(entry_point + i, 1)
+            _ = emu.mem_read(ep + i, 1)
             i += 1
         except:
             break
 
-    path = os.path.join(tempfile.mkdtemp(), hex(entry_point) + '.bin')
+    path = os.path.join(tempfile.mkdtemp(), hex(ep) + '.bin')
     with open(path, 'wb') as outfile:
-        outfile.write(emu.mem_read(entry_point, i))
+        outfile.write(emu.mem_read(ep, i))
 
     print(Fore.MAGENTA + '[+] Dumping ''CreateThread'' ( complete dump saved in ' + path + ' )'
                          + Style.RESET_ALL)
@@ -238,7 +235,6 @@ def hook_code_32(emu, begin, end, ctx):
     Returns:
         None
     """
-    global entry_point
 
     # As a first thing, to avoid delays, check UnHook
     global enable_unhook
@@ -250,7 +246,7 @@ def hook_code_32(emu, begin, end, ctx):
             enable_unhook = None
             print(Fore.GREEN + '[+] Hook Enabled' + Style.RESET_ALL)
             # Set entry-point when hoos starts, needed for fixups
-            entry_point = begin
+            cfg.entry_point = begin
         else:
             return
 
@@ -269,7 +265,7 @@ def hook_code_32(emu, begin, end, ctx):
     opcodes_data = b''.join(opcodes_buffer)
 
     if enable_fixups == True:
-        fixups_unicorn(emu, begin, end, mnem, op, 'x86', entry_point)
+        fixups_unicorn(emu, begin, end, mnem, op, 'x86', cfg.entry_point)
 
     #####################################
     # YARA RULES MATCHING SECTION START #
@@ -378,7 +374,6 @@ def hook_code_64(emu, begin, end, ctx):
     Returns:
         None
     """
-    global entry_point
 
     # As a first thing, to avoid delays, check UnHook
     global enable_unhook
@@ -390,7 +385,7 @@ def hook_code_64(emu, begin, end, ctx):
             enable_unhook = None
             print(Fore.GREEN + '[+] Hook Enabled' + Style.RESET_ALL)
             # Set entry-point when hoos starts, needed for fixups
-            entry_point = begin
+            cfg.entry_point = begin
         else:
             return
 
@@ -408,7 +403,7 @@ def hook_code_64(emu, begin, end, ctx):
     opcodes_data = b''.join(opcodes_buffer)
 
     if enable_fixups == True:
-        fixups_unicorn(emu, begin, end, mnem, op, 'x64', entry_point)
+        fixups_unicorn(emu, begin, end, mnem, op, 'x64', cfg.entry_point)
 
     #####################################
     # YARA RULES MATCHING SECTION START #
@@ -501,100 +496,6 @@ def hook_code_64(emu, begin, end, ctx):
             input('Press ENTER to proceed')
 
     return
-
-
-def extract_payload(self, filename, ip, port, key):
-    """
-    Extract the payload from the PCAP file
-
-    Args:
-        self: cmd2 object used for output
-        filename: PCAP filename
-        ip: C2 IP
-        port: C2 port
-        key: decryption key
-
-    Returns:
-        Buffer of the payload sent by Metasploit 
-    """
-    buffer = pcap_extract(filename, ip, port, 1)
-
-    if key:
-        self.poutput(Fore.MAGENTA +
-                     '[+] Decrypting RC4 Payload' + Style.RESET_ALL)
-        cipher = ARC4.new(key)
-        buffer = cipher.decrypt(buffer[4:])
-
-    return buffer
-
-
-def load_init_registers(se, arch, sc_addr):
-    """
-    Init registers with the EIP...just in case...
-
-    Args:
-        se: Speakeasy object
-        arch: architecture
-        sc_addr: the shellcode address (entry point)
-
-    Returns:
-        None
-    """
-
-    if arch == e_arch.ARCH_X86:
-        se.reg_write(e_arch.X86_REG_EAX, sc_addr)
-        se.reg_write(e_arch.X86_REG_EBX, sc_addr)
-        se.reg_write(e_arch.X86_REG_EDI, sc_addr)
-        se.reg_write(e_arch.X86_REG_ESI, sc_addr)
-    else:
-        se.reg_write(e_arch.AMD64_REG_RAX, sc_addr)
-        se.reg_write(e_arch.AMD64_REG_RBX, sc_addr)
-        se.reg_write(e_arch.AMD64_REG_RDI, sc_addr)
-        se.reg_write(e_arch.AMD64_REG_RSI, sc_addr)
-
-
-def is_cobaltstrike(shellcode):
-    """
-    Detect if the payload is a CobaltStrike Beacon.
-
-    Args:
-        shellcode: buffer containing the shellcode
-
-    Returns:
-        Boolean stating if it is CobaltStrike
-    """
-
-    pos = shellcode.find(b'\xff\xff\xff') + 3
-    if pos != -1:
-        key = struct.unpack_from('<I', shellcode, pos)[0]
-        magic_enc = struct.unpack_from('<I', shellcode, pos + 8)[0] ^ key
-        magic = magic_enc & 0xFFFF
-
-        if magic == 0x5a4d or magic == 0x9090:
-            return True
-    else:
-        return False
-
-
-def decode_cobaltstrike(self, payload):
-    """
-    Decode CobalStrike config if parser is installed.
-
-    Args:
-        self: cmd2 object used for output
-        payload: buffer with the shellcode
-
-    Returns:
-        None (prints out the configuration)
-    """
-
-    config = cobaltstrikeConfig(payload).parse_encrypted_config_non_pe()
-    self.poutput(
-        Fore.YELLOW + '  [*] Parser detected, printing config:' + Style.RESET_ALL)
-
-    for key in config:
-        print('    ', key, '->', config[key])
-
 
 def start_speakeasy(self, kwargs, cfg):
     """
@@ -690,113 +591,6 @@ def start_speakeasy(self, kwargs, cfg):
             hexdump(buf[:48])
             with open(path, 'wb') as outfile:
                 outfile.write(buf)
-
-
-def start_shellcode(self, payload, se, arch):
-    """
-    Loads and emulates shellcode
-
-    Args:
-        self: cmd2 object used for output
-        payload: filename containing shellcode
-        se: SpeakEasy object
-        arch: architecture
-    Returns:
-        None
-    """
-    global entry_point
-
-    sc_addr = se.load_shellcode(payload, arch)
-    entry_point = sc_addr
-
-    # Check for CobaltStrike
-    if is_cobaltstrike(se.mem_read(sc_addr, 0x500)) == True:
-        self.poutput(
-            Fore.YELLOW + '[*] CobaltStrike beacon config detected' + Style.RESET_ALL)
-        if cbparser == True:
-            decode_cobaltstrike(self, payload)
-
-    # Initialize the registers with EIP
-    load_init_registers(se, arch, sc_addr)
-
-    # Map some additional memory accessed by the shellcode
-    se.emu.mem_map(sc_addr - 0x100, 0x100)
-    # Start emulation
-    self.poutput(Fore.GREEN + '[+] Starting emulation' + Style.RESET_ALL)
-    se.run_shellcode(sc_addr, offset=0x0)
-    self.poutput(Fore.GREEN + '[+] Emulation ended' + Style.RESET_ALL)
-
-    return
-
-
-def start_exe(self, payload, se, arch):
-    """
-    Loads and emulates EXE file
-
-    Args:
-        self: cmd2 object used for output
-        payload: filename containing shellcode
-        se: SpeakEasy object
-        arch: architecture
-    Returns:
-        None
-    """
-    global entry_point
-
-    module = se.load_module(payload)
-    entry_point = module.base + module.ep
-
-    # Start emulation
-    self.poutput(Fore.GREEN + '[+] Starting emulation' + Style.RESET_ALL)
-    se.run_module(module)
-    self.poutput(Fore.GREEN + '[+] Emulation ended' + Style.RESET_ALL)
-
-    return
-
-
-def start_dll(self, payload, se, arch, exportname):
-    """
-    Loads and emulates DLL
-
-    Args:
-        self: cmd2 object used for output
-        payload: filename containing shellcode
-        se: SpeakEasy object
-        arch: architecture
-    Returns:
-        None
-    """
-    global entry_point
-
-    module = se.load_module(payload)
-
-    # Start emulation
-    self.poutput(Fore.GREEN + '[+] Starting emulation' + Style.RESET_ALL)
-
-    # Fake args
-    arg0 = 0x0
-    arg1 = 0x1
-    if exportname == None:
-        # Enumerate the DLL exports
-        for exp in module.get_exports():
-            self.poutput(
-                Fore.GREEN + '[+] DLL Export: ' + exp.name + Style.RESET_ALL)
-        self.poutput(
-            Fore.GREEN + '[+]     Specify -E option to execute an export' + Style.RESET_ALL)
-    else:
-        # Execute the given function
-        se.run_module(module, all_entrypoints=False)
-        for exp in module.get_exports():
-            if exp.name == exportname.strip('\''):
-                self.poutput(
-                    Fore.GREEN + '[+] DLL Export: ' + exp.name + Style.RESET_ALL)
-                entry_point = exp.address
-                se.call(exp.address, [arg0, arg1])
-
-    self.poutput(Fore.GREEN + '[+] Emulation ended' + Style.RESET_ALL)
-
-    return
-
 
 def module_main(self, *args, **kwargs):
     """
