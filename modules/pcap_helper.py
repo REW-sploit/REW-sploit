@@ -3,7 +3,7 @@ REW-sploit
 
 pcap_helper.py
 
-Utils funtctions to manage pcap files
+Utils functions to manage pcap files
 """
 
 from scapy.all import *
