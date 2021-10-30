@@ -20,6 +20,7 @@ import modules.emulate_config as cfg
 #from modules.emulate_config import *
 from modules.pcap_helper import *
 
+
 def start_shellcode(self, payload, se, arch):
     """
     Loads and emulates shellcode
@@ -121,6 +122,7 @@ def start_dll(self, payload, se, arch, exportname):
     self.poutput(Fore.GREEN + '[+] Emulation ended' + Style.RESET_ALL)
 
     return
+
 
 def extract_payload(self, filename, ip, port, key):
     """
