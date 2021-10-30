@@ -119,7 +119,7 @@ yara_donut_hash_shortcut_32 = 'rule donut_hash_shortcut_32 {                \
                                                   ff b4 24 04 02 00 00      \
                                                   03 CE                     \
                                                   51                        \
-                                                  e8 dc 11 00 00 }          \
+                                                  e8 ?? ?? 00 00 }          \
                                condition:                                   \
                                    $opcodes_1 }'
 

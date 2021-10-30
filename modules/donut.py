@@ -8,7 +8,7 @@ Donut: https://github.com/TheWover/donut
 
 #
 # This is the list of API used by the donut stub. They may change, these come
-# from version 0.9.2 and they are located in "donut.c" file under
+# from version 0.9.3 and they are located in "donut.c" file under
 #
 #     static API_IMPORT api_imports[]=
 #
@@ -24,6 +24,13 @@ donut_api_imports = [
     b'Sleep',
     b'MultiByteToWideChar',
     b'GetUserDefaultLCID',
+    b'WaitForSingleObject',
+    b'CreateThread',
+    b'GetThreadContext',
+    b'GetCurrentThread',
+    b'GetCommandLineA',
+    b'GetCommandLineW',
+    b'CommandLineToArgvW',
     b'SafeArrayCreate',
     b'SafeArrayCreateVector',
     b'SafeArrayPutElement',
@@ -46,5 +53,17 @@ donut_api_imports = [
     b'CLRCreateInstance',
     b'CoInitializeEx',
     b'CoCreateInstance',
-    b'CoUninitialize'
+    b'CoUninitialize',
+    b'RtlEqualUnicodeString',
+    b'RtlEqualString',
+    b'RtlUnicodeStringToAnsiString',
+    b'RtlInitUnicodeString',
+    b'RtlExitUserThread',
+    b'RtlExitUserProcess',
+    b'RtlCreateUnicodeString',
+    b'RtlGetCompressionWorkSpaceSize',
+    b'RtlDecompressBuffer',
+    b'NtContinue',
+    b'AddVectoredExceptionHandler',
+    b'RemoveVectoredExceptionHandler'
 ]
