@@ -33,7 +33,6 @@ import modules.emulate_config as cfg
 from modules.emulate_rules import *
 from modules.emulate_fixups import *
 from modules.pe_helper import *
-from modules.donut import *
 from modules.emulate_helper import *
 
 #
@@ -224,6 +223,23 @@ def hook_readmem(emu, access, addr, size, value, ctx):
 
     return
 
+def hook_mapviewofsection(emu, api_name, func, params):
+    """
+    Hook for ZwMapViewOfSection
+    This one is needed for Donut EXE emulation.
+    The very first call of this API is done with protection
+    PAGE_READWRITE (0x04). After a while unicorn drops an read access
+    violation. This does not happen if I patch the protection to 
+    PAGE_EXECUTE_READWRITE (0x40)
+    """
+
+    if params[9] == 0x04:
+        params[9] = 0x40
+
+    # Call the function
+    rv = func(params)
+
+    return rv
 
 def hook_code_32(emu, begin, end, ctx):
     """
@@ -325,21 +341,17 @@ def hook_code_32(emu, begin, end, ctx):
         opcodes_buffer.clear()
         emu.exit_process()
 
-    # Shortcut for Donut PIC code
+    # Shortcut for Donut code
     elif rule_donut_hash_shortcut_32.match(data=opcodes_data):
 
         if donut_stub == False:
             cmd2.poutput(
-                Fore.YELLOW + '[*] Donut stub detected' + Style.RESET_ALL)
+                Fore.YELLOW + '[*] Donut stub detected (you may want to'
+                              ' add DLLs in decoy folder. See README.md)' + Style.RESET_ALL)
             donut_stub = True
 
-        apiname = emu.mem_read(emu.reg_read(
-            e_arch.X86_REG_ECX), 30).split(b'\x00')[0]
-
-        if apiname not in donut_api_imports:
-            # Skip the slow export hash name computation
-            emu.reg_write(e_arch.X86_REG_EIP, begin + 5)
-
+        emu.add_api_hook(hook_mapviewofsection, 'ntdll', 'ZwMapViewOfSection')
+        enable_unhook = 0
         opcodes_buffer.clear()
 
     ###################################
@@ -459,21 +471,17 @@ def hook_code_64(emu, begin, end, ctx):
         opcodes_buffer.clear()
         emu.exit_process()
 
-    # Shortcut for Donut PIC code
+    # Shortcut for Donut code
     elif rule_donut_hash_shortcut_64.match(data=opcodes_data):
 
         if donut_stub == False:
             cmd2.poutput(
-                Fore.YELLOW + '[*] Donut stub detected' + Style.RESET_ALL)
+                Fore.YELLOW + '[*] Donut stub detected (you may want to'
+                              ' add DLLs in decoy folder. See README.md)' + Style.RESET_ALL)
             donut_stub = True
 
-        apiname = emu.mem_read(emu.reg_read(
-            e_arch.AMD64_REG_RAX), 30).split(b'\x00')[0]
-
-        if apiname not in donut_api_imports:
-            # Skip the slow export hash name computation
-            emu.reg_write(e_arch.AMD64_REG_RIP, begin + 29)
-
+        emu.add_api_hook(hook_mapviewofsection, 'ntdll', 'ZwMapViewOfSection')
+        enable_unhook = 0
         opcodes_buffer.clear()
 
     ###################################
