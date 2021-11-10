@@ -270,7 +270,6 @@ def hook_code_32(emu, begin, end, ctx):
     global enable_fixups
     global donut_stub
 
-    logger = get_logger()
     # Get cmd2 obj for poutput
     cmd2 = ctx['cmd2']
 
@@ -402,9 +401,9 @@ def hook_code_64(emu, begin, end, ctx):
             return
 
     global rc4_key
+    global enable_fixups
     global donut_stub
 
-    logger = get_logger()
     # Get cmd2 obj for poutput
     cmd2 = ctx['cmd2']
 

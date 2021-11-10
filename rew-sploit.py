@@ -121,6 +121,33 @@ class RewSploit(cmd2.Cmd):
                                            writefile=args.writefile, exportname=args.exportname)
         return
 
+    #######################################
+    # Module emulate_antidebug
+    #######################################
+    emulate_antidebug_parser = argparse.ArgumentParser()
+    emulate_antidebug_parser.add_argument('-P', '--payload', type=ascii, help='Payload binary file',
+                                          required=True, metavar='<Filename>')
+    emulate_antidebug_parser.add_argument('-E', '--exportname', type=ascii, help='DLL Export to emulate',
+                                          default=None, metavar='<DLLExportame>')
+    emulate_antidebug_parser.add_argument('-F', '--fixups', action='store_true', help='Enable Unicorn Fixups',
+                                          default=False)
+    emulate_antidebug_parser.add_argument('-U', '--unhook', type=ascii, help='UnHook single step function forever (0) or until <Address> (in hex). Speeds up emulation',
+                                          default=None, metavar='0x<Address>')
+    emulate_antidebug_parser.add_argument('-a', '--arch', type=ascii, help='Architecture (x86 or x64)',
+                                          default='x86')
+
+    @cmd2.with_category(REWSPLOIT_CATEGORY)
+    @cmd2.with_argparser(emulate_payload_parser)
+    def do_emulate_antidebug(self, args):
+        """
+        Emulate an executable to detect antidebug tricks
+        """
+
+        plugin = __import__('modules.emulate_antidebug')
+        plugin.emulate_antidebug.module_main(self=self, payload=args.payload,
+                                             unhook=args.unhook, fixups=args.fixups,
+                                             arch=args.arch, exportname=args.exportname)
+        return
 
 if __name__ == '__main__':
     c = RewSploit()
