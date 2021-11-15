@@ -207,6 +207,16 @@ def hook_peb_ntglobalflag(emu, access, addr, size, value, ctx):
 
     return
 
+def hook_peb_heapbase(emu, access, addr, size, value, ctx):
+    """
+    Detects direct access to HeapBase. Used to access Flags and ForceFlags.
+    """
+
+    print(Fore.YELLOW + '[#] Suspect access to HeapBase (may be used to access Flags'
+          'and ForceFlags) at ' + hex(emu.get_pc()) + Style.RESET_ALL)
+
+    return
+
 def hook_code_32(emu, begin, end, ctx):
     """
     32 bit hooking function. This is executed for each instruction
@@ -248,9 +258,13 @@ def hook_code_32(emu, begin, end, ctx):
     # Set up memory hooks for antidebug detection, just done once
     #
     if begin == cfg.entry_point:
+
         peb_addr = struct.unpack("<Q",emu.mem_read(emu.peb_addr,8))[0]
         emu.add_mem_read_hook(hook_peb_beingdebugged, begin=peb_addr + 0x02, end=peb_addr + 0x03)
         emu.add_mem_read_hook(hook_peb_ntglobalflag, begin=peb_addr + 0x68, end=peb_addr + 0x69)
+
+        emu.add_mem_read_hook(hook_peb_heapbase, begin=peb_addr + 0x18, end=peb_addr + 0x19)
+        emu.add_mem_read_hook(hook_peb_heapbase, begin=peb_addr + 0x1030, end=peb_addr + 0x1031)
 
     if enable_fixups == True:
         fixups_unicorn(emu, begin, end, mnem, op, 'x86', cfg.entry_point)
@@ -322,9 +336,11 @@ def hook_code_64(emu, begin, end, ctx):
     #
     if begin == cfg.entry_point:
         peb_addr = struct.unpack("<Q",emu.mem_read(emu.peb_addr,8))[0]
-        # FIXME address
         emu.add_mem_read_hook(hook_peb_beingdebugged, begin=peb_addr + 2, end=peb_addr + 3)
         emu.add_mem_read_hook(hook_peb_ntglobalflag, begin=peb_addr + 0xbc, end=peb_addr + 0xbd)
+
+        emu.add_mem_read_hook(hook_peb_heapbase, begin=peb_addr + 0x30, end=peb_addr + 0x31)
+
 
     if enable_fixups == True:
         fixups_unicorn(emu, begin, end, mnem, op, 'x64', cfg.entry_point)
