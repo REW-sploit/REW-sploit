@@ -189,6 +189,7 @@ def hook_ntquerysysteminformation(emu, api_name, func, params):
 
 def hook_peb_beingdebugged(emu, access, addr, size, value, ctx):
     """
+    Memory hook.
     Detects direct access to PEB!BeingDebugged     
     """
 
@@ -199,6 +200,7 @@ def hook_peb_beingdebugged(emu, access, addr, size, value, ctx):
 
 def hook_peb_ntglobalflag(emu, access, addr, size, value, ctx):
     """
+    Memory hook.
     Detects direct access to PEB!NtGlobalFlag     
     """
 
@@ -209,6 +211,7 @@ def hook_peb_ntglobalflag(emu, access, addr, size, value, ctx):
 
 def hook_peb_heapbase(emu, access, addr, size, value, ctx):
     """
+    Memory hook.
     Detects direct access to HeapBase. Used to access Flags and ForceFlags.
     """
 
@@ -216,6 +219,74 @@ def hook_peb_heapbase(emu, access, addr, size, value, ctx):
           'and ForceFlags) at ' + hex(emu.get_pc()) + Style.RESET_ALL)
 
     return
+
+def hook_getprocaddress(emu, api_name, func, params):
+    """
+    Hooks FARPROC GetProcAddress(
+        HMODULE hModule,
+        LPCSTR  lpProcName
+    );
+
+    Detects access to CsrGetProcessID (CRSS.EXE).
+    If a process is able to open CRSS.exe process, it means 
+    that the process has SeDebugPrivilege enabled
+
+    Args:
+        Derived from Speakeasy implementation
+
+    Returns:
+        Result of the called API
+
+    """
+
+    module, procname = params
+
+    if emu.read_mem_string(procname).lower() == 'CsrGetProcessId'.lower():
+        print(Fore.YELLOW + '[#] GetProcAddress() of CRSS.EXE at ' + 
+              hex(emu.get_ret_address()) + Style.RESET_ALL)
+
+    # Call the function
+    rv = func(params)
+
+    return rv
+
+def hook_createfilea(emu, api_name, func, params):
+    """
+    HANDLE CreateFileA(
+        PCSTR                 lpFileName,
+        DWORD                 dwDesiredAccess,
+        DWORD                 dwShareMode,
+        LPSECURITY_ATTRIBUTES lpSecurityAttributes,
+        DWORD                 dwCreationDisposition,
+        DWORD                 dwFlagsAndAttributes,
+        HANDLE                hTemplateFile
+    );
+
+    Tries to open the image of the current process in exclusive mode;
+    if it fails it is probably under debugger.
+
+    Args:
+        Derived from Speakeasy implementation
+
+    Returns:
+        Result of the called API
+
+    """
+
+    filename, access, sharemode, _, _, _, _ = params
+
+    if (
+        emu.read_mem_string(filename).split('\\')[-1] == emu.get_current_module().path.split('/')[-1] and 
+        access == 0x80000000 and 
+        sharemode == 0
+       ):
+        print(Fore.YELLOW + '[#] Exclusive CreateFileA() on current process at ' + 
+              hex(emu.get_ret_address()) + Style.RESET_ALL)
+
+    # Call the function
+    rv = func(params)
+
+    return rv
 
 def hook_code_32(emu, begin, end, ctx):
     """
@@ -429,6 +500,8 @@ def start_speakeasy(self, kwargs, cfg):
     se.add_api_hook(hook_checkremotedebuggerpresent, 'kernel32', 'CheckRemoteDebuggerPresent')
     se.add_api_hook(hook_ntqueryinformationprocess, 'ntdll', 'NtQueryInformationProcess')
     se.add_api_hook(hook_ntquerysysteminformation, 'ntdll', 'NtQuerySystemInformation')
+    se.add_api_hook(hook_getprocaddress, 'kernel32', 'GetProcAddress')
+    se.add_api_hook(hook_createfilea, 'kernel32', 'CreateFileA')
 
     # Detect file type and start proper emulation
     code_type = pe_format(payload)
