@@ -41,7 +41,7 @@ def start_shellcode(self, payload, se, arch):
     if is_cobaltstrike(se.mem_read(sc_addr, 0x500)) == True:
         self.poutput(
             Fore.YELLOW + '[*] CobaltStrike beacon config detected' + Style.RESET_ALL)
-        if cbparser == True:
+        if cfg.cbparser == True:
             decode_cobaltstrike(self, payload)
 
     # Initialize the registers with EIP
@@ -209,7 +209,7 @@ def decode_cobaltstrike(self, payload):
         None (prints out the configuration)
     """
 
-    config = cobaltstrikeConfig(payload).parse_encrypted_config_non_pe()
+    config = cfg.cobaltstrikeConfig(payload).parse_encrypted_config_non_pe()
     self.poutput(
         Fore.YELLOW + '  [*] Parser detected, printing config:' + Style.RESET_ALL)
 
