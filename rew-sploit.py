@@ -9,7 +9,7 @@ import cmd2
 from cmd2 import style, fg, bg
 from colorama import Fore, Back, Style
 
-version = '0.3.3'
+version = '0.3.4'
 
 
 class RewSploit(cmd2.Cmd):
