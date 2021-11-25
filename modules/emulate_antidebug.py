@@ -66,7 +66,7 @@ def get_logger():
     if not logger.handlers:
         sh = logging.StreamHandler(sys.stdout)
         logger.addHandler(sh)
-        logger.setLevel(logging.ERROR)
+    logger.setLevel(logging.ERROR)
 
     return logger
 
@@ -216,7 +216,7 @@ def hook_peb_heapbase(emu, access, addr, size, value, ctx):
     """
 
     print(Fore.YELLOW + '[#] Suspect access to HeapBase (may be used to access Flags'
-          'and ForceFlags) at ' + hex(emu.get_pc()) + Style.RESET_ALL)
+          ' and ForceFlags) at ' + hex(emu.get_pc()) + Style.RESET_ALL)
 
     return
 

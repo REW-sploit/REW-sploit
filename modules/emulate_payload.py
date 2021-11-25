@@ -69,7 +69,7 @@ def get_logger():
     if not logger.handlers:
         sh = logging.StreamHandler(sys.stdout)
         logger.addHandler(sh)
-        logger.setLevel(logging.INFO)
+    logger.setLevel(logging.INFO)
 
     return logger
 
