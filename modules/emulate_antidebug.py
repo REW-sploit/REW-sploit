@@ -288,6 +288,31 @@ def hook_createfilea(emu, api_name, func, params):
 
     return rv
 
+def hook_getlocaltime(emu, api_name, func, params):
+    """
+    HANDLE GetLocalTime(
+        LPSYSTEMTIME lpSystemTime
+    );
+
+    Gets local time. If called multiple times could be sign of 
+    timing checks
+
+    Args:
+        Derived from Speakeasy implementation
+
+    Returns:
+        Result of the called API
+
+    """
+
+    print(Fore.YELLOW + '[#] Call to GetLocalTime() at ' + 
+              hex(emu.get_ret_address()) + Style.RESET_ALL)
+
+    # Call the function
+    rv = func(params)
+
+    return rv
+
 def hook_code_32(emu, begin, end, ctx):
     """
     32 bit hooking function. This is executed for each instruction
@@ -502,6 +527,7 @@ def start_speakeasy(self, kwargs, cfg):
     se.add_api_hook(hook_ntquerysysteminformation, 'ntdll', 'NtQuerySystemInformation')
     se.add_api_hook(hook_getprocaddress, 'kernel32', 'GetProcAddress')
     se.add_api_hook(hook_createfilea, 'kernel32', 'CreateFileA')
+    se.add_api_hook(hook_getlocaltime, 'kernel32', 'GetLocalTime')
 
     # Detect file type and start proper emulation
     code_type = pe_format(payload)
