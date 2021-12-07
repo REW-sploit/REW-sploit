@@ -313,6 +313,102 @@ def hook_getlocaltime(emu, api_name, func, params):
 
     return rv
 
+def hook_getsystemtime(emu, api_name, func, params):
+    """
+    void GetSystemTime(
+      [out] LPSYSTEMTIME lpSystemTime
+    );
+
+    Gets system time. If called multiple times could be sign of 
+    timing checks
+
+    Args:
+        Derived from Speakeasy implementation
+
+    Returns:
+        Result of the called API
+
+    """
+
+    print(Fore.YELLOW + '[#] Call to GetSystemTime() at ' + 
+              hex(emu.get_ret_address()) + Style.RESET_ALL)
+
+    # Call the function
+    rv = func(params)
+
+    return rv
+
+def hook_gettickcount(emu, api_name, func, params):
+    """
+    DWORD GetTickCount();
+
+    The return value is the number of milliseconds that have elapsed since the system was started.
+    If called multiple times could be sign of 
+    timing checks
+
+    Args:
+        Derived from Speakeasy implementation
+
+    Returns:
+        Result of the called API
+
+    """
+
+    print(Fore.YELLOW + '[#] Call to GetTickCount() at ' + 
+              hex(emu.get_ret_address()) + Style.RESET_ALL)
+
+    # Call the function
+    rv = func(params)
+
+    return rv
+
+def hook_queryperformancecounter(emu, api_name, func, params):
+    """
+    BOOL QueryPerformanceCounter(
+        [out] LARGE_INTEGER *lpPerformanceCount
+    );
+
+    Retrieves the current value of the performance counter
+
+    Args:
+        Derived from Speakeasy implementation
+
+    Returns:
+        Result of the called API
+
+    """
+
+    print(Fore.YELLOW + '[#] Call to QueryPerformanceCounter() at ' + 
+              hex(emu.get_ret_address()) + Style.RESET_ALL)
+
+    # Call the function
+    rv = func(params)
+
+    return rv
+
+def hook_timegettime(emu, api_name, func, params):
+    """
+    DWORD timeGetTime();
+
+    Retrieves the system time, in milliseconds. 
+    The system time is the time elapsed since Windows was started.
+
+    Args:
+        Derived from Speakeasy implementation
+
+    Returns:
+        Result of the called API
+
+    """
+
+    print(Fore.YELLOW + '[#] Call to timeGetTime() at ' + 
+              hex(emu.get_ret_address()) + Style.RESET_ALL)
+
+    # Call the function
+    rv = func(params)
+
+    return rv
+
 def hook_code_32(emu, begin, end, ctx):
     """
     32 bit hooking function. This is executed for each instruction
@@ -528,6 +624,10 @@ def start_speakeasy(self, kwargs, cfg):
     se.add_api_hook(hook_getprocaddress, 'kernel32', 'GetProcAddress')
     se.add_api_hook(hook_createfilea, 'kernel32', 'CreateFileA')
     se.add_api_hook(hook_getlocaltime, 'kernel32', 'GetLocalTime')
+    se.add_api_hook(hook_getsystemtime, 'kernel32', 'GetSystemTime')
+    se.add_api_hook(hook_gettickcount, 'kernel32', 'GetTickCount')
+    se.add_api_hook(hook_queryperformancecounter, 'kernel32', 'QueryPerformanceCounter')
+    se.add_api_hook(hook_timegettime, 'winmm', 'timeGetTime')
 
     # Detect file type and start proper emulation
     code_type = pe_format(payload)
