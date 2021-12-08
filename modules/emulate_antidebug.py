@@ -316,7 +316,7 @@ def hook_getlocaltime(emu, api_name, func, params):
 def hook_getsystemtime(emu, api_name, func, params):
     """
     void GetSystemTime(
-      [out] LPSYSTEMTIME lpSystemTime
+        LPSYSTEMTIME lpSystemTime
     );
 
     Gets system time. If called multiple times could be sign of 
@@ -365,7 +365,7 @@ def hook_gettickcount(emu, api_name, func, params):
 def hook_queryperformancecounter(emu, api_name, func, params):
     """
     BOOL QueryPerformanceCounter(
-        [out] LARGE_INTEGER *lpPerformanceCount
+        LARGE_INTEGER *lpPerformanceCount
     );
 
     Retrieves the current value of the performance counter
@@ -403,6 +403,42 @@ def hook_timegettime(emu, api_name, func, params):
 
     print(Fore.YELLOW + '[#] Call to timeGetTime() at ' + 
               hex(emu.get_ret_address()) + Style.RESET_ALL)
+
+    # Call the function
+    rv = func(params)
+
+    return rv
+
+def hook_virtualprotect(emu, api_name, func, params):
+    """
+    BOOL VirtualProtect(
+        LPVOID lpAddress,
+        SIZE_T dwSize,
+        DWORD  flNewProtect,
+        PDWORD lpflOldProtect
+    );
+
+    Check if VirtualAlloc is called on a return address (from stack). It is used
+    to discover the stepping over of a function done in debuggers. It is usually
+    done if the returning address is equal to 0xCC (INT3).
+
+    Args:
+        Derived from Speakeasy implementation
+
+    Returns:
+        Result of the called API
+
+    """
+
+    address, _, _, _ = params
+    haddress = hex(address)[2:]
+
+    for addr in emu.get_stack_trace():
+        if haddress in addr:
+
+            print(Fore.YELLOW + '[#] Call to VirtualProtect() on "Return Address" at ' +
+                hex(emu.get_ret_address()) + Style.RESET_ALL)
+            break
 
     # Call the function
     rv = func(params)
@@ -628,6 +664,7 @@ def start_speakeasy(self, kwargs, cfg):
     se.add_api_hook(hook_gettickcount, 'kernel32', 'GetTickCount')
     se.add_api_hook(hook_queryperformancecounter, 'kernel32', 'QueryPerformanceCounter')
     se.add_api_hook(hook_timegettime, 'winmm', 'timeGetTime')
+    se.add_api_hook(hook_virtualprotect, 'kernel32', 'VirtualProtect')
 
     # Detect file type and start proper emulation
     code_type = pe_format(payload)
