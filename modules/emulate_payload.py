@@ -536,7 +536,8 @@ def start_speakeasy(self, kwargs, cfg):
                 Fore.RED + '[!] Invalid address (must be Hex)' + Style.RESET_ALL)
             return
 
-    se = speakeasy.Speakeasy(config=cfg, logger=get_logger())
+    logger = get_logger()
+    se = speakeasy.Speakeasy(config=cfg, logger=logger)
     arch = arch.lower()
     if arch == 'x86':
         arch = e_arch.ARCH_X86
@@ -573,6 +574,10 @@ def start_speakeasy(self, kwargs, cfg):
     elif code_type == 1:
         start_exe(self, payload, se, arch)
 
+    # Clean up logger handlers to avoid conflicts
+    for hndl in logger.handlers:
+        logger.removeHandler(hndl)
+        
     if ip != '0.0.0.0':
         self.poutput(
             Fore.GREEN + '\n[+] Getting payload from PCAP' + Style.RESET_ALL)
