@@ -131,4 +131,6 @@ dmypy.json
 # REW-sploit
 samples/*.bin
 samples/*.pcap
+extras/CobaltStrikeParser
 samples/*.exe
+

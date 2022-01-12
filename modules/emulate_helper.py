@@ -7,6 +7,8 @@ Common functions used for the "emulate" modules
 
 """
 
+import re
+import os
 import struct
 from Crypto.Cipher import ARC4
 from colorama import Fore, Back, Style
@@ -35,10 +37,11 @@ def start_shellcode(self, payload, se, arch):
     """
 
     sc_addr = se.load_shellcode(payload, arch)
+    sc_size = os.path.getsize(payload)
     cfg.entry_point = sc_addr
 
     # Check for CobaltStrike
-    if is_cobaltstrike(se.mem_read(sc_addr, 0x500)) == True:
+    if is_cobaltstrike(se.mem_read(sc_addr, sc_size)) == True:
         self.poutput(
             Fore.YELLOW + '[*] CobaltStrike beacon config detected' + Style.RESET_ALL)
         if cfg.cbparser == True:
@@ -185,6 +188,13 @@ def is_cobaltstrike(shellcode):
         Boolean stating if it is CobaltStrike
     """
 
+    MAGIC_CFG = [
+        b'\x69\x68\x69\x68\x69\x6b..\x69\x6b\x69\x68\x69\x6b..\x69\x6a',
+        b'\x2e\x2f\x2e\x2f\x2e\x2c..\x2e\x2c\x2e\x2f\x2e\x2c..\x2e',
+        b'\x00\x01\x00\x01\x00\x02..\x00\x02\x00\x01\x00\x02..\x00'
+    ]
+
+    # Check for encrypted config
     pos = shellcode.find(b'\xff\xff\xff') + 3
     if pos != -1:
         key = struct.unpack_from('<I', shellcode, pos)[0]
@@ -193,9 +203,14 @@ def is_cobaltstrike(shellcode):
 
         if magic == 0x5a4d or magic == 0x9090:
             return True
-    else:
-        return False
+    
+    # Check for plain/encoded config
+    for pattern in MAGIC_CFG:
+        match = re.search(pattern, shellcode)
+        if match:
+             return True
 
+    return False
 
 def decode_cobaltstrike(self, payload):
     """
@@ -209,9 +224,18 @@ def decode_cobaltstrike(self, payload):
         None (prints out the configuration)
     """
 
-    config = cfg.cobaltstrikeConfig(payload).parse_encrypted_config_non_pe()
+    try:
+        config = cfg.cobaltstrikeConfig(payload).parse_config()
+    except:
+        pass
+    if not config:
+        try:
+            config = cfg.cobaltstrikeConfig(payload).parse_encrypted_config_non_pe()
+        except:
+            pass
+
     self.poutput(
         Fore.YELLOW + '  [*] Parser detected, printing config:' + Style.RESET_ALL)
-
-    for key in config:
-        print('    ', key, '->', config[key])
+    if config:
+        for key in config:
+            print('    ', key, '->', config[key])
