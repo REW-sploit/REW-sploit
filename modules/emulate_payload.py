@@ -69,7 +69,7 @@ def get_logger():
     if not logger.handlers:
         sh = logging.StreamHandler(sys.stdout)
         logger.addHandler(sh)
-        logger.setLevel(logging.INFO)
+    logger.setLevel(logging.INFO)
 
     return logger
 
@@ -389,6 +389,7 @@ def hook_code_64(emu, begin, end, ctx):
             return
 
     global rc4_key
+    global enable_fixups
     global donut_stub
 
     # Get cmd2 obj for poutput

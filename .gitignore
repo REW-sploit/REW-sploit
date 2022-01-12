@@ -132,3 +132,5 @@ dmypy.json
 samples/*.bin
 samples/*.pcap
 extras/CobaltStrikeParser
+samples/*.exe
+
