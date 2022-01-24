@@ -27,7 +27,7 @@ import speakeasy
 import speakeasy.winenv.arch as e_arch
 import speakeasy.winenv.defs.winsock.ws2_32 as wstypes
 
-import modules.emulate_config as cfg 
+import modules.emulate_config as cfg
 from modules.emulate_rules import *
 from modules.emulate_fixups import *
 from modules.pe_helper import *
@@ -52,6 +52,7 @@ current_process = 0
 #
 opcodes_buffer = collections.deque(maxlen=5)
 
+
 def get_logger():
     """
     Get the default logger for speakeasy
@@ -70,6 +71,7 @@ def get_logger():
 
     return logger
 
+
 def hook_isdebuggerpresent(emu, api_name, func, params):
     """
     Hook IsDebuggerPresent
@@ -87,6 +89,7 @@ def hook_isdebuggerpresent(emu, api_name, func, params):
     rv = func(params)
 
     return rv
+
 
 def hook_getcurrentprocess(emu, api_name, func, params):
     """
@@ -107,6 +110,7 @@ def hook_getcurrentprocess(emu, api_name, func, params):
     current_process = rv
     return rv
 
+
 def hook_checkremotedebuggerpresent(emu, api_name, func, params):
     """
     Hook CheckRemoteDebuggerPresnet()
@@ -124,6 +128,7 @@ def hook_checkremotedebuggerpresent(emu, api_name, func, params):
     rv = func(params)
 
     return rv
+
 
 def hook_ntqueryinformationprocess(emu, api_name, func, params):
     """
@@ -150,13 +155,14 @@ def hook_ntqueryinformationprocess(emu, api_name, func, params):
     handle, infoclass, _, _, _ = params
 
     if handle == current_process and (infoclass == 0x07 or infoclass == 0x1f):
-        print(Fore.YELLOW + '[#] Suspect NtQueryInformationProcess() at ' + 
+        print(Fore.YELLOW + '[#] Suspect NtQueryInformationProcess() at ' +
               hex(emu.get_ret_address()) + Style.RESET_ALL)
 
     # Call the function
     rv = func(params)
 
     return rv
+
 
 def hook_ntquerysysteminformation(emu, api_name, func, params):
     """
@@ -179,7 +185,7 @@ def hook_ntquerysysteminformation(emu, api_name, func, params):
     infoclass, _, _, _ = params
 
     if infoclass == 0x23:
-        print(Fore.YELLOW + '[#] Suspect NtQuerySystemInformation() at ' + 
+        print(Fore.YELLOW + '[#] Suspect NtQuerySystemInformation() at ' +
               hex(emu.get_ret_address()) + Style.RESET_ALL)
 
     # Call the function
@@ -187,16 +193,18 @@ def hook_ntquerysysteminformation(emu, api_name, func, params):
 
     return rv
 
+
 def hook_peb_beingdebugged(emu, access, addr, size, value, ctx):
     """
     Memory hook.
     Detects direct access to PEB!BeingDebugged     
     """
 
-    print(Fore.YELLOW + '[#] Direct access to PEB!BeingDebugged at ' + 
-              hex(emu.get_pc()) + Style.RESET_ALL)
+    print(Fore.YELLOW + '[#] Direct access to PEB!BeingDebugged at ' +
+          hex(emu.get_pc()) + Style.RESET_ALL)
 
     return
+
 
 def hook_peb_ntglobalflag(emu, access, addr, size, value, ctx):
     """
@@ -204,10 +212,11 @@ def hook_peb_ntglobalflag(emu, access, addr, size, value, ctx):
     Detects direct access to PEB!NtGlobalFlag     
     """
 
-    print(Fore.YELLOW + '[#] Direct access to PEB!NtGlobalFlag at ' + 
-              hex(emu.get_pc()) + Style.RESET_ALL)
+    print(Fore.YELLOW + '[#] Direct access to PEB!NtGlobalFlag at ' +
+          hex(emu.get_pc()) + Style.RESET_ALL)
 
     return
+
 
 def hook_peb_heapbase(emu, access, addr, size, value, ctx):
     """
@@ -219,6 +228,7 @@ def hook_peb_heapbase(emu, access, addr, size, value, ctx):
           ' and ForceFlags) at ' + hex(emu.get_pc()) + Style.RESET_ALL)
 
     return
+
 
 def hook_getprocaddress(emu, api_name, func, params):
     """
@@ -242,13 +252,14 @@ def hook_getprocaddress(emu, api_name, func, params):
     module, procname = params
 
     if emu.read_mem_string(procname).lower() == 'CsrGetProcessId'.lower():
-        print(Fore.YELLOW + '[#] GetProcAddress() of CRSS.EXE at ' + 
+        print(Fore.YELLOW + '[#] GetProcAddress() of CRSS.EXE at ' +
               hex(emu.get_ret_address()) + Style.RESET_ALL)
 
     # Call the function
     rv = func(params)
 
     return rv
+
 
 def hook_createfilea(emu, api_name, func, params):
     """
@@ -276,17 +287,18 @@ def hook_createfilea(emu, api_name, func, params):
     filename, access, sharemode, _, _, _, _ = params
 
     if (
-        emu.read_mem_string(filename).split('\\')[-1] == emu.get_current_module().path.split('/')[-1] and 
-        access == 0x80000000 and 
+        emu.read_mem_string(filename).split('\\')[-1] == emu.get_current_module().path.split('/')[-1] and
+        access == 0x80000000 and
         sharemode == 0
-       ):
-        print(Fore.YELLOW + '[#] Exclusive CreateFileA() on current process at ' + 
+    ):
+        print(Fore.YELLOW + '[#] Exclusive CreateFileA() on current process at ' +
               hex(emu.get_ret_address()) + Style.RESET_ALL)
 
     # Call the function
     rv = func(params)
 
     return rv
+
 
 def hook_getlocaltime(emu, api_name, func, params):
     """
@@ -305,13 +317,14 @@ def hook_getlocaltime(emu, api_name, func, params):
 
     """
 
-    print(Fore.YELLOW + '[#] Call to GetLocalTime() at ' + 
-              hex(emu.get_ret_address()) + Style.RESET_ALL)
+    print(Fore.YELLOW + '[#] Call to GetLocalTime() at ' +
+          hex(emu.get_ret_address()) + Style.RESET_ALL)
 
     # Call the function
     rv = func(params)
 
     return rv
+
 
 def hook_getsystemtime(emu, api_name, func, params):
     """
@@ -330,13 +343,14 @@ def hook_getsystemtime(emu, api_name, func, params):
 
     """
 
-    print(Fore.YELLOW + '[#] Call to GetSystemTime() at ' + 
-              hex(emu.get_ret_address()) + Style.RESET_ALL)
+    print(Fore.YELLOW + '[#] Call to GetSystemTime() at ' +
+          hex(emu.get_ret_address()) + Style.RESET_ALL)
 
     # Call the function
     rv = func(params)
 
     return rv
+
 
 def hook_gettickcount(emu, api_name, func, params):
     """
@@ -354,13 +368,14 @@ def hook_gettickcount(emu, api_name, func, params):
 
     """
 
-    print(Fore.YELLOW + '[#] Call to GetTickCount() at ' + 
-              hex(emu.get_ret_address()) + Style.RESET_ALL)
+    print(Fore.YELLOW + '[#] Call to GetTickCount() at ' +
+          hex(emu.get_ret_address()) + Style.RESET_ALL)
 
     # Call the function
     rv = func(params)
 
     return rv
+
 
 def hook_queryperformancecounter(emu, api_name, func, params):
     """
@@ -378,13 +393,14 @@ def hook_queryperformancecounter(emu, api_name, func, params):
 
     """
 
-    print(Fore.YELLOW + '[#] Call to QueryPerformanceCounter() at ' + 
-              hex(emu.get_ret_address()) + Style.RESET_ALL)
+    print(Fore.YELLOW + '[#] Call to QueryPerformanceCounter() at ' +
+          hex(emu.get_ret_address()) + Style.RESET_ALL)
 
     # Call the function
     rv = func(params)
 
     return rv
+
 
 def hook_timegettime(emu, api_name, func, params):
     """
@@ -401,13 +417,14 @@ def hook_timegettime(emu, api_name, func, params):
 
     """
 
-    print(Fore.YELLOW + '[#] Call to timeGetTime() at ' + 
-              hex(emu.get_ret_address()) + Style.RESET_ALL)
+    print(Fore.YELLOW + '[#] Call to timeGetTime() at ' +
+          hex(emu.get_ret_address()) + Style.RESET_ALL)
 
     # Call the function
     rv = func(params)
 
     return rv
+
 
 def hook_virtualprotect(emu, api_name, func, params):
     """
@@ -418,9 +435,12 @@ def hook_virtualprotect(emu, api_name, func, params):
         PDWORD lpflOldProtect
     );
 
-    Check if VirtualAlloc is called on a return address (from stack). It is used
-    to discover the stepping over of a function done in debuggers. It is usually
-    done if the returning address is equal to 0xCC (INT3).
+    Performs 2 checks:
+    1. Check if VirtualProtect is called on a return address (from stack). It is used
+       to discover the stepping over of a function done in debuggers. It is usually
+       done if the returning address is equal to 0xCC (INT3).
+    2. If the new Protections includes the PAGE_GUARD option, it could be used to
+       detect memory breakpoints set by debuggers
 
     Args:
         Derived from Speakeasy implementation
@@ -430,20 +450,27 @@ def hook_virtualprotect(emu, api_name, func, params):
 
     """
 
-    address, _, _, _ = params
+    PAGE_GUARD = 0x100
+
+    address, _, newprotect, _ = params
     haddress = hex(address)[2:]
+
+    if newprotect & PAGE_GUARD:
+        print(Fore.YELLOW + '[#] Call to VirtualProtect() with PAGE_GUARD at ' +
+              hex(emu.get_ret_address()) + Style.RESET_ALL)
 
     for addr in emu.get_stack_trace():
         if haddress in addr:
 
             print(Fore.YELLOW + '[#] Call to VirtualProtect() on "Return Address" at ' +
-                hex(emu.get_ret_address()) + Style.RESET_ALL)
+                  hex(emu.get_ret_address()) + Style.RESET_ALL)
             break
 
     # Call the function
     rv = func(params)
 
     return rv
+
 
 def hook_code_32(emu, begin, end, ctx):
     """
@@ -487,12 +514,16 @@ def hook_code_32(emu, begin, end, ctx):
     #
     if begin == cfg.entry_point:
 
-        peb_addr = struct.unpack("<Q",emu.mem_read(emu.peb_addr,8))[0]
-        emu.add_mem_read_hook(hook_peb_beingdebugged, begin=peb_addr + 0x02, end=peb_addr + 0x03)
-        emu.add_mem_read_hook(hook_peb_ntglobalflag, begin=peb_addr + 0x68, end=peb_addr + 0x69)
+        peb_addr = struct.unpack("<Q", emu.mem_read(emu.peb_addr, 8))[0]
+        emu.add_mem_read_hook(hook_peb_beingdebugged,
+                              begin=peb_addr + 0x02, end=peb_addr + 0x03)
+        emu.add_mem_read_hook(hook_peb_ntglobalflag,
+                              begin=peb_addr + 0x68, end=peb_addr + 0x69)
 
-        emu.add_mem_read_hook(hook_peb_heapbase, begin=peb_addr + 0x18, end=peb_addr + 0x19)
-        emu.add_mem_read_hook(hook_peb_heapbase, begin=peb_addr + 0x1030, end=peb_addr + 0x1031)
+        emu.add_mem_read_hook(
+            hook_peb_heapbase, begin=peb_addr + 0x18, end=peb_addr + 0x19)
+        emu.add_mem_read_hook(
+            hook_peb_heapbase, begin=peb_addr + 0x1030, end=peb_addr + 0x1031)
 
     if enable_fixups == True:
         fixups_unicorn(emu, begin, end, mnem, op, 'x86', cfg.entry_point)
@@ -563,12 +594,14 @@ def hook_code_64(emu, begin, end, ctx):
     # Set up memory hooks for antidebug detection, just done once
     #
     if begin == cfg.entry_point:
-        peb_addr = struct.unpack("<Q",emu.mem_read(emu.peb_addr,8))[0]
-        emu.add_mem_read_hook(hook_peb_beingdebugged, begin=peb_addr + 2, end=peb_addr + 3)
-        emu.add_mem_read_hook(hook_peb_ntglobalflag, begin=peb_addr + 0xbc, end=peb_addr + 0xbd)
+        peb_addr = struct.unpack("<Q", emu.mem_read(emu.peb_addr, 8))[0]
+        emu.add_mem_read_hook(hook_peb_beingdebugged,
+                              begin=peb_addr + 2, end=peb_addr + 3)
+        emu.add_mem_read_hook(hook_peb_ntglobalflag,
+                              begin=peb_addr + 0xbc, end=peb_addr + 0xbd)
 
-        emu.add_mem_read_hook(hook_peb_heapbase, begin=peb_addr + 0x30, end=peb_addr + 0x31)
-
+        emu.add_mem_read_hook(
+            hook_peb_heapbase, begin=peb_addr + 0x30, end=peb_addr + 0x31)
 
     if enable_fixups == True:
         fixups_unicorn(emu, begin, end, mnem, op, 'x64', cfg.entry_point)
@@ -596,6 +629,7 @@ def hook_code_64(emu, begin, end, ctx):
     ###################################
 
     return
+
 
 def start_speakeasy(self, kwargs, cfg):
     """
@@ -634,7 +668,8 @@ def start_speakeasy(self, kwargs, cfg):
                 Fore.RED + '[!] Invalid address (must be Hex)' + Style.RESET_ALL)
             return
 
-    se = speakeasy.Speakeasy(config=cfg, logger=get_logger())
+    logger = get_logger()
+    se = speakeasy.Speakeasy(config=cfg, logger=logger)
     arch = arch.lower()
     if arch == 'x86':
         arch = e_arch.ARCH_X86
@@ -654,15 +689,19 @@ def start_speakeasy(self, kwargs, cfg):
     # Place hooks for antidebug
     se.add_api_hook(hook_isdebuggerpresent, 'kernel32', 'IsDebuggerPresent')
     se.add_api_hook(hook_getcurrentprocess, 'kernel32', 'GetCurrentProcess')
-    se.add_api_hook(hook_checkremotedebuggerpresent, 'kernel32', 'CheckRemoteDebuggerPresent')
-    se.add_api_hook(hook_ntqueryinformationprocess, 'ntdll', 'NtQueryInformationProcess')
-    se.add_api_hook(hook_ntquerysysteminformation, 'ntdll', 'NtQuerySystemInformation')
+    se.add_api_hook(hook_checkremotedebuggerpresent,
+                    'kernel32', 'CheckRemoteDebuggerPresent')
+    se.add_api_hook(hook_ntqueryinformationprocess,
+                    'ntdll', 'NtQueryInformationProcess')
+    se.add_api_hook(hook_ntquerysysteminformation,
+                    'ntdll', 'NtQuerySystemInformation')
     se.add_api_hook(hook_getprocaddress, 'kernel32', 'GetProcAddress')
     se.add_api_hook(hook_createfilea, 'kernel32', 'CreateFileA')
     se.add_api_hook(hook_getlocaltime, 'kernel32', 'GetLocalTime')
     se.add_api_hook(hook_getsystemtime, 'kernel32', 'GetSystemTime')
     se.add_api_hook(hook_gettickcount, 'kernel32', 'GetTickCount')
-    se.add_api_hook(hook_queryperformancecounter, 'kernel32', 'QueryPerformanceCounter')
+    se.add_api_hook(hook_queryperformancecounter,
+                    'kernel32', 'QueryPerformanceCounter')
     se.add_api_hook(hook_timegettime, 'winmm', 'timeGetTime')
     se.add_api_hook(hook_virtualprotect, 'kernel32', 'VirtualProtect')
 
@@ -674,6 +713,11 @@ def start_speakeasy(self, kwargs, cfg):
         start_dll(self, payload, se, arch, exportname)
     elif code_type == 1:
         start_exe(self, payload, se, arch)
+
+    # Clean up logger handlers to avoid conflicts
+    for hndl in logger.handlers:
+        logger.removeHandler(hndl)
+
 
 def module_main(self, *args, **kwargs):
     """

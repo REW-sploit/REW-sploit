@@ -9,6 +9,7 @@ Common functions used for the "emulate" modules
 
 import re
 import os
+import pefile
 import struct
 from Crypto.Cipher import ARC4
 from colorama import Fore, Back, Style
@@ -41,7 +42,7 @@ def start_shellcode(self, payload, se, arch):
     cfg.entry_point = sc_addr
 
     # Check for CobaltStrike
-    if is_cobaltstrike(se.mem_read(sc_addr, sc_size)) == True:
+    if is_cobaltstrike(se.mem_read(sc_addr, sc_size), False) == True:
         self.poutput(
             Fore.YELLOW + '[*] CobaltStrike beacon config detected' + Style.RESET_ALL)
         if cfg.cbparser == True:
@@ -72,6 +73,16 @@ def start_exe(self, payload, se, arch):
     Returns:
         None
     """
+
+    # Check for CobaltStrike
+    pe = pefile.PE(payload)
+    data_sections = [s for s in pe.sections if s.Name.find(b'.data') != -1]
+    data = data_sections[0].get_data()
+    if is_cobaltstrike(data, True) == True:
+        self.poutput(
+            Fore.YELLOW + '[*] CobaltStrike beacon config detected' + Style.RESET_ALL)
+        if cfg.cbparser == True:
+            decode_cobaltstrike(self, payload)
 
     module = se.load_module(payload)
     cfg.entry_point = module.base + module.ep
@@ -177,12 +188,13 @@ def load_init_registers(se, arch, sc_addr):
         se.reg_write(e_arch.AMD64_REG_RSI, sc_addr)
 
 
-def is_cobaltstrike(shellcode):
+def is_cobaltstrike(incode, isPE):
     """
     Detect if the payload is a CobaltStrike Beacon.
 
     Args:
-        shellcode: buffer containing the shellcode
+        incode: buffer containing the shellcode or the PE
+        isPE: boolean to flag if this is a PE data section
 
     Returns:
         Boolean stating if it is CobaltStrike
@@ -194,23 +206,69 @@ def is_cobaltstrike(shellcode):
         b'\x00\x01\x00\x01\x00\x02..\x00\x02\x00\x01\x00\x02..\x00'
     ]
 
-    # Check for encrypted config
-    pos = shellcode.find(b'\xff\xff\xff') + 3
-    if pos != -1:
-        key = struct.unpack_from('<I', shellcode, pos)[0]
-        magic_enc = struct.unpack_from('<I', shellcode, pos + 8)[0] ^ key
-        magic = magic_enc & 0xFFFF
-
-        if magic == 0x5a4d or magic == 0x9090:
-            return True
+    if isPE == False:
+        # Check for encrypted config in shellcode
+        pos = incode.find(b'\xff\xff\xff') + 3
+        if pos != -1:
+            key = struct.unpack_from('<I', incode, pos)[0]
+            magic_enc = struct.unpack_from('<I', incode, pos + 8)[0] ^ key
+            magic = magic_enc & 0xFFFF
     
+            if magic == 0x5a4d or magic == 0x9090:
+                return True
+    else:
+        # Check for encrypted config in data section of PE
+        offset = find_pekey_cobaltstrike(incode)
+    
+        if offset != -1:
+            key = incode[offset:offset+4]
+            size = int.from_bytes(incode[offset-4:offset], 'little')
+            enc_data_offset = offset + 16 - (offset % 16)
+    
+            # Decrypt data
+            enc_data = incode[enc_data_offset:enc_data_offset+size]
+            plain_data = []
+            for i, c in enumerate(enc_data):
+                plain_data.append(c ^ key[i % 4])
+    
+            # Replace incode with decoded data for check
+            incode = bytes(plain_data)
+
     # Check for plain/encoded config
     for pattern in MAGIC_CFG:
-        match = re.search(pattern, shellcode)
+        match = re.search(pattern, incode)
         if match:
-             return True
+            return True
 
     return False
+
+
+def find_pekey_cobaltstrike(data):
+    """
+    Try to find the encryption key in a PE executable
+
+    Args:
+        data: data buffer with data to look into
+
+    Returns:
+        Offest where the key has been found (-1 if not found)
+    """
+
+    limit = 1100
+    offset = 0
+    pos = -1
+
+    while offset < len(data):
+        key = data[offset:offset+4]
+        if key != bytes(4):
+            if data.count(key) >= limit:
+                pos = offset
+                break
+
+        offset += 4
+
+    return pos
+
 
 def decode_cobaltstrike(self, payload):
     """
@@ -230,7 +288,13 @@ def decode_cobaltstrike(self, payload):
         pass
     if not config:
         try:
-            config = cfg.cobaltstrikeConfig(payload).parse_encrypted_config_non_pe()
+            config = cfg.cobaltstrikeConfig(payload).parse_encrypted_config()
+        except:
+            pass
+    if not config:
+        try:
+            config = cfg.cobaltstrikeConfig(
+                payload).parse_encrypted_config_non_pe()
         except:
             pass
 
