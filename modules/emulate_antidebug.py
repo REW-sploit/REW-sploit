@@ -67,7 +67,8 @@ def get_logger():
     if not logger.handlers:
         sh = logging.StreamHandler(sys.stdout)
         logger.addHandler(sh)
-    logger.setLevel(logging.ERROR)
+    #logger.setLevel(logging.ERROR)
+    logger.setLevel(logging.INFO)
 
     return logger
 
@@ -471,6 +472,46 @@ def hook_virtualprotect(emu, api_name, func, params):
 
     return rv
 
+def hook_ntsetinformationthread(emu, api_name, func, params):
+    """
+    NtSetInformationThread(
+        HANDLE          ThreadHandle,
+        THREADINFOCLASS ThreadInformationClass,
+        PVOID           ThreadInformation,
+        ULONG           ThreadInformationLength
+    );
+
+    Check if the ThreadInformation param has the 0x11 flag 
+    (ThreadHideFromDebugger)
+    """
+    
+    _, _, threadinfo, _ = params
+    if threadinfo | 0x11:
+        print(Fore.YELLOW + '[#] Call to NtSetInformationThread() with ' +
+              ' at "ThreadHideFromDebugger" ' + hex(emu.get_ret_address()) + 
+              Style.RESET_ALL)
+    # Call the function
+    rv = func(params)
+
+    return rv
+
+def hook_outputdebugstringw(emu, api_name, func, params):
+    """
+    void OutputDebugStringW(
+        LPCWSTR lpOutputString
+    );
+
+    Check if the function has been called. It is an old trick, checking
+    the return value: if debugger is not present returns an error
+    """
+    
+    print(Fore.YELLOW + '[#] Call to OutputDebugString() at ' +
+          hex(emu.get_ret_address()) + Style.RESET_ALL)
+
+    # Call the function
+    rv = func(params)
+
+    return rv
 
 def hook_code_32(emu, begin, end, ctx):
     """
@@ -704,6 +745,8 @@ def start_speakeasy(self, kwargs, cfg):
                     'kernel32', 'QueryPerformanceCounter')
     se.add_api_hook(hook_timegettime, 'winmm', 'timeGetTime')
     se.add_api_hook(hook_virtualprotect, 'kernel32', 'VirtualProtect')
+    se.add_api_hook(hook_ntsetinformationthread, 'ntdll', 'NtSetInformationThread')
+    se.add_api_hook(hook_outputdebugstringw, 'kernel32', 'OutputDebugStringW')
 
     # Detect file type and start proper emulation
     code_type = pe_format(payload)
