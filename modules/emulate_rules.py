@@ -127,10 +127,9 @@ rule_donut_hash_shortcut_32 = yara.compile(source=yara_donut_hash_shortcut_32)
 
 #
 # Name         : [Donut] Donut support 64 bit
-# Search for   : mov rsi, qword ptr [rsp + 0x40]
-#                add rsp, 0x20
-#                pop rdi
-#                ret
+# Search for   : xor rax,qword ptr ss:[rbp+180]
+#                cmp rax,qword ptr ss:[rbp+200]
+#                jne ...
 # Used for     : If matched, rules all rules will be automatically unhooked
 #                to speed up emulation. Also some additional fixupes will be
 #                applied.
@@ -139,10 +138,9 @@ rule_donut_hash_shortcut_32 = yara.compile(source=yara_donut_hash_shortcut_32)
 yara_donut_hash_shortcut_64 = 'rule donut_hash_shortcut_64 {                \
                                strings:                                     \
                                    $opcodes_1 = {                           \
-                                                  48 8b 74 24 ??            \
-                                                  48 83 c4 20               \
-                                                  5f                        \
-                                                  c3 }                      \
+                                                 48 33 85 80 01 00 00       \
+                                                 48 3B 85 00 02 00 00       \
+                                                 0F 85 FC 01 }              \
                                condition:                                   \
                                    $opcodes_1 }'
 

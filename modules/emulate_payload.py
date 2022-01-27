@@ -508,6 +508,7 @@ def start_speakeasy(self, kwargs, cfg):
     global debug
     global enable_fixups
     global enable_unhook
+    global donut_stub
 
     ip = kwargs['ip'].replace('\'', '')
     port = kwargs['port']
@@ -577,6 +578,9 @@ def start_speakeasy(self, kwargs, cfg):
     # Clean up logger handlers to avoid conflicts
     for hndl in logger.handlers:
         logger.removeHandler(hndl)
+    # Reset flags
+    enable_unhook = None
+    donut_stub = False
         
     if ip != '0.0.0.0':
         self.poutput(
