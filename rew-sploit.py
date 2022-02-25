@@ -103,6 +103,8 @@ class RewSploit(cmd2.Cmd):
                                         default=False)
     emulate_payload_parser.add_argument('-W', '--writefile', action='store_true', help='Dump WriteFile API content',
                                         default=False)
+    emulate_payload_parser.add_argument('-M', '--writemem', action='store_true', help='Dump VirtualAlloc API allocated content',
+                                        default=False)
     emulate_payload_parser.add_argument('-E', '--exportname', type=ascii, help='DLL Export to emulate',
                                         default=None, metavar='<DLLExportame>')
 
@@ -118,7 +120,8 @@ class RewSploit(cmd2.Cmd):
                                            payload=args.payload, file=args.file, arch=args.arch,
                                            debug=args.debug, fixups=args.fixups,
                                            unhook=args.unhook, thread=args.thread,
-                                           writefile=args.writefile, exportname=args.exportname)
+                                           writefile=args.writefile, writemem=args.writemem,
+                                           exportname=args.exportname)
         return
 
     #######################################
@@ -148,6 +151,7 @@ class RewSploit(cmd2.Cmd):
                                              unhook=args.unhook, fixups=args.fixups,
                                              arch=args.arch, exportname=args.exportname)
         return
+
 
 if __name__ == '__main__':
     c = RewSploit()
