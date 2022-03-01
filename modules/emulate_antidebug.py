@@ -67,8 +67,7 @@ def get_logger():
     if not logger.handlers:
         sh = logging.StreamHandler(sys.stdout)
         logger.addHandler(sh)
-    #logger.setLevel(logging.ERROR)
-    logger.setLevel(logging.INFO)
+    logger.setLevel(logging.ERROR)
 
     return logger
 
@@ -712,6 +711,14 @@ def start_speakeasy(self, kwargs, cfg):
     logger = get_logger()
     se = speakeasy.Speakeasy(config=cfg, logger=logger)
     arch = arch.lower()
+
+    # Automatically detects arch for EXE and DLL
+    detected_arch = pe_arch(payload)
+    if detected_arch:
+        arch = detected_arch
+        self.poutput(
+            Fore.YELLOW + '[*] Architecture set to ' + arch + Style.RESET_ALL)
+
     if arch == 'x86':
         arch = e_arch.ARCH_X86
         # Set hooks
