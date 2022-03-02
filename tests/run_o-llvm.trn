@@ -1,0 +1,35 @@
+[*] Architecture set to amd64
+[+] Starting emulation
+* exec: tls_callback_0
+0x4038bd: 'KERNEL32.InitializeCriticalSection(0x40d900)' -> None
+* exec: tls_callback_1
+* exec: module_entry
+0x40297b: 'KERNEL32.GetSystemTimeAsFileTime(0x1211f48)' -> None
+0x402986: 'KERNEL32.GetCurrentProcessId()' -> 0x420
+0x40298f: 'KERNEL32.GetCurrentThreadId()' -> 0x434
+0x402997: 'KERNEL32.GetTickCount()' -> 0x5265c14
+0x4029a4: 'KERNEL32.QueryPerformanceCounter(0x1211f50)' -> 0x1
+0x4014c9: 'msvcrt._initterm(0x410018, 0x410030)' -> 0x0
+0x40147f: 'msvcrt._initterm(0x410000, 0x410010)' -> 0x0
+0x401289: 'KERNEL32.SetUnhandledExceptionFilter(0x403470)' -> 0x0
+0x40396f: 'msvcrt.strlen(".pdata")' -> 0x6
+0x4039cf: 'msvcrt.strncmp(".text", ".pdata", 0x8)' -> 0x1
+0x4039cf: 'msvcrt.strncmp(".data", ".pdata", 0x8)' -> 0x1
+0x4039cf: 'msvcrt.strncmp(".rdata", ".pdata", 0x8)' -> 0x1
+0x4039cf: 'msvcrt.strncmp(".pdata", ".pdata", 0x8)' -> 0x0
+0x40135e: 'msvcrt.malloc(0x8)' -> 0x4920
+0x4027aa: 'msvcrt._lock(0x8)' -> None
+0x4027de: 'msvcrt.__dllonexit(0x401560, 0x1211e28, 0x1211e30)' -> 0x401560
+0x40280d: 'msvcrt._unlock(0x8)' -> None
+0x4027aa: 'msvcrt._lock(0x8)' -> None
+0x4027de: 'msvcrt.__dllonexit(0x402840, 0x1211e68, 0x1211e70)' -> 0x402840
+0x40280d: 'msvcrt._unlock(0x8)' -> None
+0x401a96: 'WININET.InternetOpenW("Mozilla/5.0", 0x0, 0x0, 0x0, 0x0)' -> 0x20
+0x401b41: 'WININET.InternetConnectW(0x20, "www.google.com", 0x1bb, "", "", 0x3, 0x0, 0x0)' -> 0x24
+0x401bde: 'WININET.HttpOpenRequestW(0x24, "GET", "/", 0x0, 0x0, 0x0, "INTERNET_FLAG_SECURE", 0x0)' -> 0x28
+0x401d3a: 'WININET.HttpSendRequestA(0x28, 0x0, 0x0, 0x0, 0x0)' -> 0x1
+0xfeedf00c: module_entry: Caught error: unsupported_api
+Invalid memory read (UC_ERR_READ_UNMAPPED)
+Unsupported API: libstdc++-6._Znay (ret: 0x401fa8)
+* Timeout of 0 sec(s) reached.
+[+] Emulation ended
