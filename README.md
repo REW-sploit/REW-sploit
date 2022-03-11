@@ -113,6 +113,43 @@ in the `Speakeasy` folder `winenv/decoys/amd64` and/or `winenv/decoys/x86` (see 
 This [Shikata Ga Nai](https://github.com/EgeBalci/sgn.git) implementation works just fine most of the times. In some cases it fails with an `invalid read`, so I implemented `Fixup #4` for it. 
 
 
+## Anti-debug
+
+A new command `emulate_antidebug` has been added from version `0.4`: this should help in identifying antidebug tricks used in teh analyzed code, so that you can patch it when executing in a real debug environment. This is an example of what has been implemented:
+```
+[#] Call to QueryPerformanceCounter() at 0x414049
+[#] IsDebuggerPresent() at 0x4157e7
+[#] CheckRemoteDebuggerPresent() at 0x415828
+[#] Suspect NtQueryInformationProcess() at 0x4158b3
+[#] Suspect NtQuerySystemInformation() at 0x415a22
+[#] Direct access to PEB!BeingDebugged at 0x415a6a
+[#] Direct access to PEB!NtGlobalFlag at 0x415a9e
+[#] Suspect access to HeapBase (may be used to access Flags and ForceFlags) at 0x415b17
+[#] GetProcAddress() of CRSS.EXE at 0x415b75
+[#] Exclusive CreateFileA() on current process at 0x415bc4
+[#] Call to GetLocalTime() at 0x415bfd
+[#] Call to GetSystemTime() at 0x415c20
+[#] Call to GetTickCount() at 0x415c52
+[#] Call to QueryPerformanceCounter() at 0x415ca6
+[#] Call to timeGetTime() at 0x415cd7
+[#] Call to VirtualProtect() on "Return Address" at 0x4120b9
+```
+
+
+## Dumping functions
+
+The `emulate_payload` command has 3 options to dump content of several artifacts:
+
+```
+  -T, --thread          Dump CreateThread API content from lpStartAddress
+  -W, --writefile       Dump WriteFile API content
+  -M, --writemem        Dump VirtualAlloc API allocated content
+```
+
+With these options you can dump the content of memory areas or files during emulation. For example the `--writemem` option allows to dump all the allocated memory when accessed in read or execution (for example with a JMP in the area); a common behavior of malicious code is to allocate memory, decrypt it and then execute or use it to do additional things. This option allows to get this content after decryption.
+
+
+
 ## A couple of words about performance
 
 Obviously emulation slows down everything. Moreover, hooking every instruction in order to interact with the execution, make things even slower. In general this works fine with small shellcode, but have some issues with complex code. That's why I added an option to **turn off** hooking to speed up execution:
