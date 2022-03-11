@@ -426,7 +426,8 @@ def hook_code_32(emu, begin, end, ctx):
 
     # Print debug infos
     if debug >= 1:
-        print('%s: 0x%s %s' % (hex(begin), emu.mem_read(begin, end).hex(), instr))
+        
+        print()
         print('   EAX=0x%x' % emu.reg_read(e_arch.X86_REG_EAX))
         print('   EBX=0x%x' % emu.reg_read(e_arch.X86_REG_EBX))
         print('   ECX=0x%x' % emu.reg_read(e_arch.X86_REG_ECX))
@@ -435,7 +436,8 @@ def hook_code_32(emu, begin, end, ctx):
         print('   EDI=0x%x' % emu.reg_read(e_arch.X86_REG_EDI))
         print('   ESP=0x%x' % emu.reg_read(e_arch.X86_REG_ESP))
         print('   EBP=0x%x' % emu.reg_read(e_arch.X86_REG_EBP))
-
+        print('%s: 0x%s %s' % (hex(begin), emu.mem_read(begin, end).hex(), instr))
+        
         if debug >= 2:
             input('Press ENTER to proceed')
 
@@ -556,7 +558,8 @@ def hook_code_64(emu, begin, end, ctx):
 
     # Print debug infos
     if debug >= 1:
-        print('%s: 0x%s %s' % (hex(begin), emu.mem_read(begin, end).hex(), instr))
+        
+        print()
         print('   RAX=0x%x' % emu.reg_read(e_arch.AMD64_REG_RAX))
         print('   RBX=0x%x' % emu.reg_read(e_arch.AMD64_REG_RBX))
         print('   RCX=0x%x' % emu.reg_read(e_arch.AMD64_REG_RCX))
@@ -565,6 +568,7 @@ def hook_code_64(emu, begin, end, ctx):
         print('   RDI=0x%x' % emu.reg_read(e_arch.AMD64_REG_RDI))
         print('   RSP=0x%x' % emu.reg_read(e_arch.AMD64_REG_RSP))
         print('   RBP=0x%x' % emu.reg_read(e_arch.AMD64_REG_RBP))
+        print('%s: 0x%s %s' % (hex(begin), emu.mem_read(begin, end).hex(), instr))
 
         if debug >= 2:
             input('Press ENTER to proceed')
