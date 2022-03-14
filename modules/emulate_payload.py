@@ -183,7 +183,7 @@ def hook_dump_mem(emu, access, addr, size, value, ctx):
 
             print(Fore.MAGENTA + '[+] Dumping ''VirtualAlloc'' ( complete dump saved in ' +
                   path + ' )' + Style.RESET_ALL)
-            # del(mem_chunk[begin])
+            del(mem_chunk[begin])
             break
 
     return
