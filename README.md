@@ -18,7 +18,7 @@ Installation is very easy. I strongly suggest to create  a specific Python Env f
 
 ```
 # python -m venv <your-env-path>/rew-sploit
-# source <your-env-path>/bin/activate
+# source <your-env-path>/rew-sploit/bin/activate
 # git clone https://github.com/REW-sploit/REW-sploit.git
 # cd REW-sploit
 # pip install -r requirements.txt
