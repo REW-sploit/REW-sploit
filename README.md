@@ -76,7 +76,7 @@ You can find several examples on the current capabilities here below:
 - [Cobalt-Strike config Extraction](https://asciinema.org/a/1hGjmn9hgx5i2CAZFePpbaI70?speed=5)
 - [Debugging options](https://asciinema.org/a/kIhOo2jKjOBTcxh8VrU0UzkXi)
 - [Dumping Threads](https://asciinema.org/a/5SeKKodDXl79vceM7eXjsQJil?speed=2)
-- [Dumping Memory Allocations] (https://asciinema.org/a/MCWCt3phS9L9YABCeDnUd3poF)
+- [Dumping Memory Allocations](https://asciinema.org/a/MCWCt3phS9L9YABCeDnUd3poF)
 
 
 ## Donut support
