@@ -140,7 +140,9 @@ def fixups_unicorn(emu, begin, end, mnem, op, arch, entry_point):
                 # Skip instruction
                 emu.reg_write(e_arch.AMD64_REG_RIP, begin + 2)
 
-            print('[!] Fixup #3 applied (Trap Flag evasion)')
+            # This case is considered an antidebug feature, so the output 
+            # is changed accordingly
+            print('[#] Fixup #3 applied (Trap Flag evasion)')
 
     #
     # Fixup #4

@@ -1,0 +1,27 @@
+[*] Architecture set to amd64
+[+] Starting emulation
+[#] Call to QueryPerformanceCounter() at 0x140014367
+[#] IsDebuggerPresent() at 0x140015dad
+[#] CheckRemoteDebuggerPresent() at 0x140015ddc
+[#] Suspect NtQueryInformationProcess() at 0x140015e5a
+[#] Suspect NtQueryInformationProcess() at 0x140015ee7
+[#] Suspect NtQuerySystemInformation() at 0x140015fd1
+[#] Direct access to PEB!BeingDebugged at 0x14001601c
+[#] Direct access to PEB!NtGlobalFlag at 0x140016053
+[#] Suspect access to HeapBase (may be used to access Flags and ForceFlags) at 0x1400160bb
+[#] GetProcAddress() of CRSS.EXE at 0x1400160f4
+[#] Exclusive CreateFileA() on current process at 0x140016146
+[#] Call to GetLocalTime() at 0x14001615f
+[#] Call to GetLocalTime() at 0x14001616c
+[#] Call to GetSystemTime() at 0x140016185
+[#] Call to GetSystemTime() at 0x140016192
+[#] Call to GetTickCount() at 0x1400161a4
+[#] Call to GetTickCount() at 0x1400161b0
+[#] Call to QueryPerformanceCounter() at 0x1400161cf
+[#] Call to QueryPerformanceCounter() at 0x1400161dc
+[#] Call to timeGetTime() at 0x1400161ee
+[#] Call to timeGetTime() at 0x1400161fa
+[#] Call to VirtualProtect() on "Return Address" at 0x140011e9b
+[#] Call to VirtualProtect() on "Return Address" at 0x140011eb6
+* Timeout of 0 sec(s) reached.
+[+] Emulation ended

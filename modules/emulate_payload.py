@@ -28,7 +28,7 @@ import speakeasy
 import speakeasy.winenv.arch as e_arch
 import speakeasy.winenv.defs.winsock.ws2_32 as wstypes
 
-import modules.emulate_config as cfg 
+import modules.emulate_config as cfg
 #from modules.emulate_config import *
 from modules.emulate_rules import *
 from modules.emulate_fixups import *
@@ -46,6 +46,7 @@ debug = 0
 enable_fixups = True
 donut_stub = False
 enable_unhook = None
+mem_chunk = {}
 
 rc4_key = b''
 
@@ -54,6 +55,7 @@ rc4_key = b''
 # Keep this into consideration when creating rules
 #
 opcodes_buffer = collections.deque(maxlen=5)
+
 
 def get_logger():
     """
@@ -69,7 +71,7 @@ def get_logger():
     if not logger.handlers:
         sh = logging.StreamHandler(sys.stdout)
         logger.addHandler(sh)
-        logger.setLevel(logging.INFO)
+    logger.setLevel(logging.INFO)
 
     return logger
 
@@ -135,6 +137,81 @@ def hook_WriteFile(emu, api_name, func, params):
     rv = func(params)
 
     return rv
+
+
+def hook_VirtualAlloc(emu, api_name, func, params):
+    """
+    Hook for VirutalAlloc API.
+    Used to dump the buffer when accessed
+
+    Args:
+        Derived from Speakeasy implementation
+
+    Returns:
+        Result of the called API
+    """
+
+    global mem_chunk
+
+    lpaddr, dwsize, _, _ = params
+
+    # Call the function
+    rv = func(params)
+
+    emu.add_mem_read_hook(hook_dump_mem, begin=rv, end=rv + dwsize)
+    emu.add_dyn_code_hook(hook_dump_dyn)
+
+    mem_chunk[rv] = rv + dwsize
+
+    return rv
+
+
+def hook_dump_mem(emu, access, addr, size, value, ctx):
+    """
+    Memory hook.
+    Dump the content of allocated memory if accessed to be read.
+    Used by hook_VirtualAlloc
+    """
+
+    global mem_chunk
+
+    for begin in mem_chunk:
+        if addr >= begin and addr < mem_chunk[begin]:
+            path = os.path.join(tempfile.mkdtemp(), hex(begin) + '.bin')
+            with open(path, 'wb') as outfile:
+                outfile.write(emu.mem_read(begin, mem_chunk[begin] - begin))
+
+            print(Fore.MAGENTA + '[+] Dumping ''VirtualAlloc'' ( complete dump saved in ' +
+                  path + ' )' + Style.RESET_ALL)
+            del(mem_chunk[begin])
+            break
+
+    return
+
+
+def hook_dump_dyn(ctx):
+    """
+    Dynamic code hook.
+    Dump the memory area allocated by VirtuaAlloc and then executed
+    Used by hook_VirtualAlloc
+    """
+
+    global mem_chunk
+
+    addr = ctx.get_base()
+    for begin in mem_chunk:
+        if addr >= begin and addr < mem_chunk[begin]:
+            path = os.path.join(tempfile.mkdtemp(), hex(begin) + '.bin')
+            with open(path, 'wb') as outfile:
+                outfile.write(ctx.process.emu.mem_read(
+                    begin, mem_chunk[begin] - begin))
+
+            print(Fore.MAGENTA + '[+] Dumping ''VirtualAlloc'' ( complete dump saved in ' +
+                  path + ' )' + Style.RESET_ALL)
+            del(mem_chunk[begin])
+            break
+
+    return
 
 
 def hook_recv(emu, api_name, func, params):
@@ -211,6 +288,7 @@ def hook_readmem(emu, access, addr, size, value, ctx):
 
     return
 
+
 def hook_mapviewofsection(emu, api_name, func, params):
     """
     Hook for ZwMapViewOfSection
@@ -228,6 +306,7 @@ def hook_mapviewofsection(emu, api_name, func, params):
     rv = func(params)
 
     return rv
+
 
 def hook_code_32(emu, begin, end, ctx):
     """
@@ -347,7 +426,8 @@ def hook_code_32(emu, begin, end, ctx):
 
     # Print debug infos
     if debug >= 1:
-        print('%s: 0x%s %s' % (hex(begin), emu.mem_read(begin, end).hex(), instr))
+        
+        print()
         print('   EAX=0x%x' % emu.reg_read(e_arch.X86_REG_EAX))
         print('   EBX=0x%x' % emu.reg_read(e_arch.X86_REG_EBX))
         print('   ECX=0x%x' % emu.reg_read(e_arch.X86_REG_ECX))
@@ -356,7 +436,8 @@ def hook_code_32(emu, begin, end, ctx):
         print('   EDI=0x%x' % emu.reg_read(e_arch.X86_REG_EDI))
         print('   ESP=0x%x' % emu.reg_read(e_arch.X86_REG_ESP))
         print('   EBP=0x%x' % emu.reg_read(e_arch.X86_REG_EBP))
-
+        print('%s: 0x%s %s' % (hex(begin), emu.mem_read(begin, end).hex(), instr))
+        
         if debug >= 2:
             input('Press ENTER to proceed')
 
@@ -389,6 +470,7 @@ def hook_code_64(emu, begin, end, ctx):
             return
 
     global rc4_key
+    global enable_fixups
     global donut_stub
 
     # Get cmd2 obj for poutput
@@ -476,7 +558,8 @@ def hook_code_64(emu, begin, end, ctx):
 
     # Print debug infos
     if debug >= 1:
-        print('%s: 0x%s %s' % (hex(begin), emu.mem_read(begin, end).hex(), instr))
+        
+        print()
         print('   RAX=0x%x' % emu.reg_read(e_arch.AMD64_REG_RAX))
         print('   RBX=0x%x' % emu.reg_read(e_arch.AMD64_REG_RBX))
         print('   RCX=0x%x' % emu.reg_read(e_arch.AMD64_REG_RCX))
@@ -485,11 +568,13 @@ def hook_code_64(emu, begin, end, ctx):
         print('   RDI=0x%x' % emu.reg_read(e_arch.AMD64_REG_RDI))
         print('   RSP=0x%x' % emu.reg_read(e_arch.AMD64_REG_RSP))
         print('   RBP=0x%x' % emu.reg_read(e_arch.AMD64_REG_RBP))
+        print('%s: 0x%s %s' % (hex(begin), emu.mem_read(begin, end).hex(), instr))
 
         if debug >= 2:
             input('Press ENTER to proceed')
 
     return
+
 
 def start_speakeasy(self, kwargs, cfg):
     """
@@ -507,6 +592,7 @@ def start_speakeasy(self, kwargs, cfg):
     global debug
     global enable_fixups
     global enable_unhook
+    global donut_stub
 
     ip = kwargs['ip'].replace('\'', '')
     port = kwargs['port']
@@ -518,6 +604,7 @@ def start_speakeasy(self, kwargs, cfg):
     unhook = kwargs['unhook']
     thread = kwargs['thread']
     writefile = kwargs['writefile']
+    writemem = kwargs['writemem']
     exportname = kwargs['exportname']
 
     debug = dbg
@@ -538,6 +625,14 @@ def start_speakeasy(self, kwargs, cfg):
     logger = get_logger()
     se = speakeasy.Speakeasy(config=cfg, logger=logger)
     arch = arch.lower()
+
+    # Automatically detects arch for EXE and DLL
+    detected_arch = pe_arch(payload)
+    if detected_arch:
+        arch = detected_arch
+        self.poutput(
+            Fore.YELLOW + '[*] Architecture set to ' + arch + Style.RESET_ALL)
+
     if arch == 'x86':
         arch = e_arch.ARCH_X86
         # Set hooks
@@ -563,6 +658,8 @@ def start_speakeasy(self, kwargs, cfg):
         se.add_api_hook(hook_CreateThread, 'kernel32', 'CreateThread')
     if writefile == True:
         se.add_api_hook(hook_WriteFile, 'kernel32', 'WriteFile')
+    if writemem == True:
+        se.add_api_hook(hook_VirtualAlloc, 'kernel32', 'VirtualAlloc')
 
     # Detect file type and start proper emulation
     code_type = pe_format(payload)
@@ -576,10 +673,13 @@ def start_speakeasy(self, kwargs, cfg):
     # Clean up logger handlers to avoid conflicts
     for hndl in logger.handlers:
         logger.removeHandler(hndl)
-    # Reset flags
+
+    # Reset flags and vars for next emulation
     enable_unhook = None
     donut_stub = False
-            
+    debug = 0
+    mem_chunk = {}
+
     if ip != '0.0.0.0':
         self.poutput(
             Fore.GREEN + '\n[+] Getting payload from PCAP' + Style.RESET_ALL)
@@ -593,6 +693,7 @@ def start_speakeasy(self, kwargs, cfg):
             hexdump(buf[:48])
             with open(path, 'wb') as outfile:
                 outfile.write(buf)
+
 
 def module_main(self, *args, **kwargs):
     """

@@ -4,14 +4,6 @@
 
 # REW-sploit
 
-**The tool has been presented at Black-Hat Arsenal USA 2021**
-
-https://www.blackhat.com/us-21/arsenal/schedule/index.html#rew-sploit-dissecting-metasploit-attacks-24086
-
-Slides of presentation are available at https://github.com/REW-sploit/REW-sploit_docs
-
-------
-
 Need help in analyzing  Windows shellcode or attack coming from **Metasploit Framework** or **Cobalt Strike** (or may be also other malicious or obfuscated code)? Do you need to automate tasks with simple scripting? Do you want help to decrypt **MSF** generated traffic by extracting keys from payloads?
 
 **REW-sploit** is here to help Blue Teams!
@@ -26,7 +18,7 @@ Installation is very easy. I strongly suggest to create  a specific Python Env f
 
 ```
 # python -m venv <your-env-path>/rew-sploit
-# source <your-env-path>/bin/activate
+# source <your-env-path>/rew-sploit/bin/activate
 # git clone https://github.com/REW-sploit/REW-sploit.git
 # cd REW-sploit
 # pip install -r requirements.txt
@@ -84,7 +76,7 @@ You can find several examples on the current capabilities here below:
 - [Cobalt-Strike config Extraction](https://asciinema.org/a/1hGjmn9hgx5i2CAZFePpbaI70?speed=5)
 - [Debugging options](https://asciinema.org/a/kIhOo2jKjOBTcxh8VrU0UzkXi)
 - [Dumping Threads](https://asciinema.org/a/5SeKKodDXl79vceM7eXjsQJil?speed=2)
-
+- [Dumping Memory Allocations](https://asciinema.org/a/MCWCt3phS9L9YABCeDnUd3poF)
 
 
 ## Donut support
@@ -111,6 +103,43 @@ in the `Speakeasy` folder `winenv/decoys/amd64` and/or `winenv/decoys/x86` (see 
 ##  EgeBalci/sgn
 
 This [Shikata Ga Nai](https://github.com/EgeBalci/sgn.git) implementation works just fine most of the times. In some cases it fails with an `invalid read`, so I implemented `Fixup #4` for it. 
+
+
+## Anti-debug
+
+A new command `emulate_antidebug` has been added from version `0.4`: this should help in identifying antidebug tricks used in teh analyzed code, so that you can patch it when executing in a real debug environment. This is an example of what has been implemented:
+```
+[#] Call to QueryPerformanceCounter() at 0x414049
+[#] IsDebuggerPresent() at 0x4157e7
+[#] CheckRemoteDebuggerPresent() at 0x415828
+[#] Suspect NtQueryInformationProcess() at 0x4158b3
+[#] Suspect NtQuerySystemInformation() at 0x415a22
+[#] Direct access to PEB!BeingDebugged at 0x415a6a
+[#] Direct access to PEB!NtGlobalFlag at 0x415a9e
+[#] Suspect access to HeapBase (may be used to access Flags and ForceFlags) at 0x415b17
+[#] GetProcAddress() of CRSS.EXE at 0x415b75
+[#] Exclusive CreateFileA() on current process at 0x415bc4
+[#] Call to GetLocalTime() at 0x415bfd
+[#] Call to GetSystemTime() at 0x415c20
+[#] Call to GetTickCount() at 0x415c52
+[#] Call to QueryPerformanceCounter() at 0x415ca6
+[#] Call to timeGetTime() at 0x415cd7
+[#] Call to VirtualProtect() on "Return Address" at 0x4120b9
+```
+
+
+## Dumping functions
+
+The `emulate_payload` command has 3 options to dump content of several artifacts:
+
+```
+  -T, --thread          Dump CreateThread API content from lpStartAddress
+  -W, --writefile       Dump WriteFile API content
+  -M, --writemem        Dump VirtualAlloc API allocated content
+```
+
+With these options you can dump the content of memory areas or files during emulation. For example the `--writemem` option allows to dump all the allocated memory when accessed in read or execution (for example with a JMP in the area); a common behavior of malicious code is to allocate memory, decrypt it and then execute or use it to do additional things. This option allows to get this content after decryption.
+
 
 
 ## A couple of words about performance

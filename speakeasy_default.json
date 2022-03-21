@@ -3,7 +3,7 @@
     "description": "Default emulation profile to use when not overridden by user",
     "emu_engine": "unicorn",
     "timeout": 0,
-    "max_api_count": 10000,
+    "max_api_count": 100000,
     "system": "windows",
 
     "analysis": {
@@ -250,6 +250,7 @@
 
     "modules": {
         "modules_always_exist": false,
+        "functions_always_exist": false,
         "module_directory_x86": "$ROOT$/winenv/decoys/x86",
         "module_directory_x64": "$ROOT$/winenv/decoys/amd64",
 
