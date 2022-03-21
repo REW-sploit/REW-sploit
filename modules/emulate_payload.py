@@ -673,6 +673,7 @@ def start_speakeasy(self, kwargs, cfg):
     # Clean up logger handlers to avoid conflicts
     for hndl in logger.handlers:
         logger.removeHandler(hndl)
+
     # Reset flags and vars for next emulation
     enable_unhook = None
     donut_stub = False
