@@ -4,14 +4,6 @@
 
 # REW-sploit
 
-**The tool has been presented at Black-Hat Arsenal USA 2021**
-
-https://www.blackhat.com/us-21/arsenal/schedule/index.html#rew-sploit-dissecting-metasploit-attacks-24086
-
-Slides of presentation are available at https://github.com/REW-sploit/REW-sploit_docs
-
-------
-
 Need help in analyzing  Windows shellcode or attack coming from **Metasploit Framework** or **Cobalt Strike** (or may be also other malicious or obfuscated code)? Do you need to automate tasks with simple scripting? Do you want help to decrypt **MSF** generated traffic by extracting keys from payloads?
 
 **REW-sploit** is here to help Blue Teams!
@@ -84,7 +76,7 @@ You can find several examples on the current capabilities here below:
 - [Cobalt-Strike config Extraction](https://asciinema.org/a/1hGjmn9hgx5i2CAZFePpbaI70?speed=5)
 - [Debugging options](https://asciinema.org/a/kIhOo2jKjOBTcxh8VrU0UzkXi)
 - [Dumping Threads](https://asciinema.org/a/5SeKKodDXl79vceM7eXjsQJil?speed=2)
-
+- [Dumping Memory Allocations] (https://asciinema.org/a/MCWCt3phS9L9YABCeDnUd3poF)
 
 
 ## Donut support
