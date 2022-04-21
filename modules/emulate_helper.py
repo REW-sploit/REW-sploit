@@ -120,16 +120,24 @@ def start_dll(self, payload, se, arch, exportname):
         # Enumerate the DLL exports
         for exp in module.get_exports():
             self.poutput(
-                Fore.GREEN + '[+] DLL Export: ' + exp.name + Style.RESET_ALL)
+                Fore.GREEN + '[+] DLL Export (' + str(hex(exp.ordinal)) + '): ' +
+                str(exp.name) + Style.RESET_ALL)
         self.poutput(
             Fore.GREEN + '[+]     Specify -E option to execute an export' + Style.RESET_ALL)
+        if not module.get_exports():
+            self.poutput(
+                Fore.GREEN + '[+] No exports, try \'-E DllRegisterServer\' or '
+                '\'-E DllUnRegisterServer\'')
+
     else:
         # Execute the given function
         se.run_module(module, all_entrypoints=False)
         for exp in module.get_exports():
-            if exp.name == exportname.strip('\''):
+            exportname = exportname.strip('\'')
+            if exp.name == exportname or str(hex(exp.ordinal)) == exportname:
                 self.poutput(
-                    Fore.GREEN + '[+] DLL Export: ' + exp.name + Style.RESET_ALL)
+                    Fore.GREEN + '[+] DLL Export (' + str(hex(exp.ordinal)) + '): ' +
+                    str(exp.name) + Style.RESET_ALL)
                 cfg.entry_point = exp.address
                 se.call(exp.address, [arg0, arg1])
 
@@ -213,24 +221,24 @@ def is_cobaltstrike(incode, isPE):
             key = struct.unpack_from('<I', incode, pos)[0]
             magic_enc = struct.unpack_from('<I', incode, pos + 8)[0] ^ key
             magic = magic_enc & 0xFFFF
-    
+
             if magic == 0x5a4d or magic == 0x9090:
                 return True
     else:
         # Check for encrypted config in data section of PE
         offset = find_pekey_cobaltstrike(incode)
-    
+
         if offset != -1:
             key = incode[offset:offset+4]
             size = int.from_bytes(incode[offset-4:offset], 'little')
             enc_data_offset = offset + 16 - (offset % 16)
-    
+
             # Decrypt data
             enc_data = incode[enc_data_offset:enc_data_offset+size]
             plain_data = []
             for i, c in enumerate(enc_data):
                 plain_data.append(c ^ key[i % 4])
-    
+
             # Replace incode with decoded data for check
             incode = bytes(plain_data)
 
