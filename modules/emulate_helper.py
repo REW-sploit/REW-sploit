@@ -77,12 +77,13 @@ def start_exe(self, payload, se, arch):
     # Check for CobaltStrike
     pe = pefile.PE(payload)
     data_sections = [s for s in pe.sections if s.Name.find(b'.data') != -1]
-    data = data_sections[0].get_data()
-    if is_cobaltstrike(data, True) == True:
-        self.poutput(
-            Fore.YELLOW + '[*] CobaltStrike beacon config detected' + Style.RESET_ALL)
-        if cfg.cbparser == True:
-            decode_cobaltstrike(self, payload)
+    if data_sections:
+        data = data_sections[0].get_data()
+        if is_cobaltstrike(data, True) == True:
+            self.poutput(
+                Fore.YELLOW + '[*] CobaltStrike beacon config detected' + Style.RESET_ALL)
+            if cfg.cbparser == True:
+                decode_cobaltstrike(self, payload)
 
     module = se.load_module(payload)
     cfg.entry_point = module.base + module.ep
