@@ -89,7 +89,10 @@ def hook_CreateThread(emu, api_name, func, params):
         Result of the called API
     """
 
-    _, _, ep, _, _, _ = params
+    if len(params) == 6:
+        _, _, ep, _, _, _ = params
+    else:
+        _, _, _, ep, _, _, _ = params
 
     # Try to access all the memory from the entry_point
     # until an error is triggered
@@ -426,7 +429,7 @@ def hook_code_32(emu, begin, end, ctx):
 
     # Print debug infos
     if debug >= 1:
-        
+
         print()
         print('   EAX=0x%x' % emu.reg_read(e_arch.X86_REG_EAX))
         print('   EBX=0x%x' % emu.reg_read(e_arch.X86_REG_EBX))
@@ -437,7 +440,7 @@ def hook_code_32(emu, begin, end, ctx):
         print('   ESP=0x%x' % emu.reg_read(e_arch.X86_REG_ESP))
         print('   EBP=0x%x' % emu.reg_read(e_arch.X86_REG_EBP))
         print('%s: 0x%s %s' % (hex(begin), emu.mem_read(begin, end).hex(), instr))
-        
+
         if debug >= 2:
             input('Press ENTER to proceed')
 
@@ -558,7 +561,7 @@ def hook_code_64(emu, begin, end, ctx):
 
     # Print debug infos
     if debug >= 1:
-        
+
         print()
         print('   RAX=0x%x' % emu.reg_read(e_arch.AMD64_REG_RAX))
         print('   RBX=0x%x' % emu.reg_read(e_arch.AMD64_REG_RBX))
@@ -656,6 +659,7 @@ def start_speakeasy(self, kwargs, cfg):
     #se.add_api_hook(hook_connect, 'ws2_32', 'connect')
     if thread == True:
         se.add_api_hook(hook_CreateThread, 'kernel32', 'CreateThread')
+        se.add_api_hook(hook_CreateThread, 'kernel32', 'CreateRemoteThread')
     if writefile == True:
         se.add_api_hook(hook_WriteFile, 'kernel32', 'WriteFile')
     if writemem == True:
