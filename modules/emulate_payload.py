@@ -78,7 +78,7 @@ def get_logger():
 
 def hook_CreateThread(emu, api_name, func, params):
     """
-    Hook for CreateThread API.
+    Hook for CreateThread and CreateRemoteThreadAPI.
     Used to dump the content of the memory mapped on the 
     thread.
 
@@ -90,8 +90,10 @@ def hook_CreateThread(emu, api_name, func, params):
     """
 
     if len(params) == 6:
+        # This is for CreateRemoteThread
         _, _, ep, _, _, _ = params
     else:
+        # This is for CreateThread
         _, _, _, ep, _, _, _ = params
 
     # Try to access all the memory from the entry_point
