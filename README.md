@@ -12,6 +12,10 @@ Here a quick demo:
 
 [<img src="https://asciinema.org/a/ln8tkJH7bOhACFRMdnPmk2i1o.svg" alt="asciicast" width="700" style="zoom:33%;" />](https://asciinema.org/a/ln8tkJH7bOhACFRMdnPmk2i1o)
 
+An introduction to the tool has been registered at **Insomni'hack 2022**:
+
+https://www.youtube.com/watch?v=-sjM0k0hvMU
+
 ## Install
 
 Installation is very easy. I strongly suggest to create  a specific Python Env for it:
