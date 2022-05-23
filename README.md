@@ -47,6 +47,12 @@ Optionally, you can also install Cobalt-Strike Parser:
 # git clone https://github.com/Sentinel-One/CobaltStrikeParser.git
 ```
 
+**NOTE**: from version `0.4.2` I switched to use the latest commit of `Speakeasy-Emulator` instead of the stable release. If you want to use the stable release, use
+
+```
+pip install -r requirements_stable.txt
+```
+
 
 
 ## Standing on the shoulder of giants
