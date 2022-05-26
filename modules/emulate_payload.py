@@ -354,9 +354,9 @@ def hook_code_32(emu, begin, end, ctx):
     if enable_fixups == True:
         fixups_unicorn(emu, begin, end, mnem, op, 'x86', cfg.entry_point)
 
-    #####################################
-    # YARA RULES MATCHING SECTION START #
-    #####################################
+    #########################################################
+    # 32 BIT YARA RULES/CUSTOM RULES MATCHING SECTION START #
+    #########################################################
 
     # Look for "xor esi,0x<const>"
     if rule_reverse_tcp_rc4_xor_32.match(data=opcodes_data):
@@ -425,9 +425,9 @@ def hook_code_32(emu, begin, end, ctx):
         enable_unhook = 0
         opcodes_buffer.clear()
 
-    ###################################
-    # YARA RULES MATCHING SECTION END #
-    ###################################
+    ##########################################
+    # 32 bit YARA RULES MATCHING SECTION END #
+    ##########################################
 
     # Print debug infos
     if debug >= 1:
@@ -490,9 +490,9 @@ def hook_code_64(emu, begin, end, ctx):
     if enable_fixups == True:
         fixups_unicorn(emu, begin, end, mnem, op, 'x64', cfg.entry_point)
 
-    #####################################
-    # YARA RULES MATCHING SECTION START #
-    #####################################
+    #########################################################
+    # 64 BIT YARA RULES/CUSTOM RULES MATCHING SECTION START #
+    #########################################################
 
     # Look for "xor esi,0x<const>"
     if rule_reverse_tcp_rc4_xor_64.match(data=opcodes_data):
