@@ -186,7 +186,7 @@ def hook_dump_mem(emu, access, addr, size, value, ctx):
             with open(path, 'wb') as outfile:
                 outfile.write(emu.mem_read(begin, mem_chunk[begin] - begin))
 
-            print(Fore.MAGENTA + '[+] Dumping ''VirtualAlloc'' ( complete dump saved in ' +
+            print(Fore.MAGENTA + '[+] Dumping ''VirtualAlloc'' on read ( complete dump saved in ' +
                   path + ' )' + Style.RESET_ALL)
             del(mem_chunk[begin])
             break
@@ -211,13 +211,41 @@ def hook_dump_dyn(ctx):
                 outfile.write(ctx.process.emu.mem_read(
                     begin, mem_chunk[begin] - begin))
 
-            print(Fore.MAGENTA + '[+] Dumping ''VirtualAlloc'' ( complete dump saved in ' +
+            print(Fore.MAGENTA + '[+] Dumping ''VirtualAlloc'' on exec ( complete dump saved in ' +
                   path + ' )' + Style.RESET_ALL)
             del(mem_chunk[begin])
             break
 
     return
 
+def hook_VirtualFree(emu, api_name, func, params):
+    """
+    Hook for VirutalFree API.
+    Used to dump the buffer if released
+
+    Args:
+        Derived from Speakeasy implementation
+
+    Returns:
+        Result of the called API
+    """
+
+    global mem_chunk
+
+    lpaddr, dwsize, _ = params
+
+    path = os.path.join(tempfile.mkdtemp(), hex(lpaddr) + '.bin')
+    with open(path, 'wb') as outfile:
+        outfile.write(emu.mem_read(lpaddr, mem_chunk[lpaddr] - lpaddr))
+
+    print(Fore.MAGENTA + '[+] Dumping ''VirtualAlloc'' on free ( complete dump saved in ' +
+          path + ' )' + Style.RESET_ALL)
+    del(mem_chunk[lpaddr])
+    
+    # Call the function
+    rv = func(params)
+
+    return rv
 
 def hook_recv(emu, api_name, func, params):
     """
@@ -682,6 +710,7 @@ def start_speakeasy(self, kwargs, cfg):
         se.add_api_hook(hook_WriteFile, 'kernel32', 'WriteFile')
     if writemem == True:
         se.add_api_hook(hook_VirtualAlloc, 'kernel32', 'VirtualAlloc')
+        se.add_api_hook(hook_VirtualFree, 'kernel32', 'VirtualFree')
 
     # Detect file type and start proper emulation
     code_type = pe_format(payload)
