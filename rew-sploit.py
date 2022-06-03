@@ -9,7 +9,7 @@ import cmd2
 from cmd2 import style, fg, bg
 from colorama import Fore, Back, Style
 
-version = '0.4.2'
+version = '0.4.3'
 
 
 class RewSploit(cmd2.Cmd):
@@ -99,11 +99,11 @@ class RewSploit(cmd2.Cmd):
                                         default=False)
     emulate_payload_parser.add_argument('-U', '--unhook', type=ascii, help='UnHook single step function forever (0) or until <Address> (in hex). Speeds up emulation',
                                         default=None, metavar='0x<Address>')
-    emulate_payload_parser.add_argument('-T', '--thread', action='store_true', help='Dump CreateThread API content from lpStartAddress',
+    emulate_payload_parser.add_argument('-T', '--thread', action='store_true', help='Dump CreateThread/CreateRemoteThread API content',
                                         default=False)
     emulate_payload_parser.add_argument('-W', '--writefile', action='store_true', help='Dump WriteFile API content',
                                         default=False)
-    emulate_payload_parser.add_argument('-M', '--writemem', action='store_true', help='Dump VirtualAlloc API allocated content',
+    emulate_payload_parser.add_argument('-M', '--writemem', action='store_true', help='Dump VirtualAlloc API allocated content (on read, exec or free)',
                                         default=False)
     emulate_payload_parser.add_argument('-E', '--exportname', type=ascii, help='DLL Export to emulate',
                                         default=None, metavar='<DLLExportame>')
