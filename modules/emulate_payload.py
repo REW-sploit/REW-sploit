@@ -218,6 +218,7 @@ def hook_dump_dyn(ctx):
 
     return
 
+
 def hook_VirtualFree(emu, api_name, func, params):
     """
     Hook for VirutalFree API.
@@ -241,11 +242,12 @@ def hook_VirtualFree(emu, api_name, func, params):
     print(Fore.MAGENTA + '[+] Dumping ''VirtualAlloc'' on free ( complete dump saved in ' +
           path + ' )' + Style.RESET_ALL)
     del(mem_chunk[lpaddr])
-    
+
     # Call the function
     rv = func(params)
 
     return rv
+
 
 def hook_recv(emu, api_name, func, params):
     """
