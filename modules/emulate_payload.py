@@ -356,6 +356,14 @@ def hook_code_32(emu, begin, end, ctx):
 
     #########################################################
     # 32 BIT YARA RULES/CUSTOM RULES MATCHING SECTION START #
+    #                                                       #
+    # Here you can add also your custom code.               #
+    # Variable "begin" contains the current Instruction     #
+    # Pointer. Example:                                     #
+    #                                                       #
+    #    if begin == 0x10002321:                            #
+    #         ...do something...                            #
+    #                                                       #
     #########################################################
 
     # Look for "xor esi,0x<const>"
@@ -492,6 +500,14 @@ def hook_code_64(emu, begin, end, ctx):
 
     #########################################################
     # 64 BIT YARA RULES/CUSTOM RULES MATCHING SECTION START #
+    #                                                       #
+    # Here you can add also your custom code.               #
+    # Variable "begin" contains the current Instruction     #
+    # Pointer. Example:                                     #
+    #                                                       #
+    #    if begin == 0x10002321:                            #
+    #         ...do something...                            #
+    #                                                       #
     #########################################################
 
     # Look for "xor esi,0x<const>"
