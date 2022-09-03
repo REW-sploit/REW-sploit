@@ -105,6 +105,8 @@ class RewSploit(cmd2.Cmd):
                                         default=False)
     emulate_payload_parser.add_argument('-M', '--writemem', action='store_true', help='Dump VirtualAlloc API allocated content (on read, exec or free)',
                                         default=False)
+    emulate_payload_parser.add_argument('-O', '--overrideproc', action='store_true', help='Hook GetProcAddress to perform custom actions (see emulate_payload)',
+                                        default=False)
     emulate_payload_parser.add_argument('-E', '--exportname', type=ascii, help='DLL Export to emulate',
                                         default=None, metavar='<DLLExportame>')
 
@@ -121,7 +123,7 @@ class RewSploit(cmd2.Cmd):
                                            debug=args.debug, fixups=args.fixups,
                                            unhook=args.unhook, thread=args.thread,
                                            writefile=args.writefile, writemem=args.writemem,
-                                           exportname=args.exportname)
+                                           overrideproc=args.overrideproc, exportname=args.exportname)
         return
 
     #######################################

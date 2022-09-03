@@ -249,6 +249,33 @@ def hook_VirtualFree(emu, api_name, func, params):
     return rv
 
 
+def hook_GetProcAddress(emu, api_name, func, params):
+    """
+    Hook for GetProcAddress. It can be used to change
+    behaviour/redirect certain function calls
+
+    Args:
+        Derived from Speakeasy implementation
+
+    Returns:
+        Result of the called API
+    """
+
+    hnd, name = params
+
+    # Call the function
+    rv = func(params)
+
+    # !!CUSTOMIZE ACTIONS HERE!!
+    # Example: if the name is equal to a certain API, do
+    # something different (set a specific address or ...)
+    if emu.read_mem_string(name) == 'Fl':
+
+        rv = 0
+
+    return rv
+
+
 def hook_recv(emu, api_name, func, params):
     """
     Hook for recv. Just a placeholder for the time being
@@ -656,6 +683,7 @@ def start_speakeasy(self, kwargs, cfg):
     thread = kwargs['thread']
     writefile = kwargs['writefile']
     writemem = kwargs['writemem']
+    overrideproc = kwargs['overrideproc']
     exportname = kwargs['exportname']
 
     debug = dbg
@@ -713,6 +741,8 @@ def start_speakeasy(self, kwargs, cfg):
     if writemem == True:
         se.add_api_hook(hook_VirtualAlloc, 'kernel32', 'VirtualAlloc')
         se.add_api_hook(hook_VirtualFree, 'kernel32', 'VirtualFree')
+    if overrideproc == True:
+        se.add_api_hook(hook_GetProcAddress, 'kernel32', 'GetProcAddress')
 
     # Detect file type and start proper emulation
     code_type = pe_format(payload)
