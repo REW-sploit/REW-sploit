@@ -410,6 +410,7 @@ def hook_code_32(emu, begin, end, ctx):
     opcodes_buffer.append(emu.mem_read(begin, end))
     opcodes_data = b''.join(opcodes_buffer)
 
+    # Check if memory need to be dumped
     if dumpmem_at == begin:
         zipdump = create_memdump_archive(ctx['se'], begin)
         path = os.path.join(tempfile.mkdtemp(), hex(begin) + '.zip')
@@ -419,6 +420,7 @@ def hook_code_32(emu, begin, end, ctx):
         cmd2.poutput(Fore.MAGENTA + '[+] Dumping process memory at address 0x%x' % (begin) +
                      '( complete dump saved in ' + path + ' )' + Style.RESET_ALL)
 
+    # Check if Fixups need to be enabled
     if enable_fixups == True:
         fixups_unicorn(emu, begin, end, mnem, op, 'x86', cfg.entry_point)
 
@@ -564,6 +566,7 @@ def hook_code_64(emu, begin, end, ctx):
     opcodes_buffer.append(emu.mem_read(begin, end))
     opcodes_data = b''.join(opcodes_buffer)
 
+    # Check if memory need to be dumped
     if dumpmem_at == begin:
         zipdump = create_memdump_archive(ctx['se'], begin)
         path = os.path.join(tempfile.mkdtemp(), hex(begin) + '.zip')
@@ -573,6 +576,7 @@ def hook_code_64(emu, begin, end, ctx):
         cmd2.poutput(Fore.MAGENTA + '[+] Dumping process memory at address 0x%x' % (begin) +
                      '( complete dump saved in ' + path + ' )' + Style.RESET_ALL)
 
+    # Check if Fixups need to be enabled
     if enable_fixups == True:
         fixups_unicorn(emu, begin, end, mnem, op, 'x64', cfg.entry_point)
 
