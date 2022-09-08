@@ -11,6 +11,7 @@ from colorama import Fore, Back, Style
 
 version = '0.4.3'
 
+
 class RewSploit(cmd2.Cmd):
     """ REW-sploit """
 

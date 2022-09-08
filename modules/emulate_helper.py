@@ -354,7 +354,8 @@ def create_memdump_archive(self, eip) -> bytes:
     manifest = []
     _zip = BytesIO()
 
-    loaded_bins = [os.path.splitext(os.path.basename(b))[0] for b in self.loaded_bins]
+    loaded_bins = [os.path.splitext(os.path.basename(b))[0]
+                   for b in self.loaded_bins]
 
     with zipfile.ZipFile(_zip, mode="w", compression=zipfile.ZIP_DEFLATED) as zf:
         procs = []
