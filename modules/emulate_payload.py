@@ -411,7 +411,7 @@ def hook_code_32(emu, begin, end, ctx):
     opcodes_data = b''.join(opcodes_buffer)
 
     if dumpmem_at == begin:
-        zipdump = create_memdump_archive(ctx['se'])
+        zipdump = create_memdump_archive(ctx['se'], begin)
         path = os.path.join(tempfile.mkdtemp(), hex(begin) + '.zip')
         with open(path, 'wb') as outfile:
             outfile.write(zipdump)
@@ -565,7 +565,7 @@ def hook_code_64(emu, begin, end, ctx):
     opcodes_data = b''.join(opcodes_buffer)
 
     if dumpmem_at == begin:
-        zipdump = create_memdump_archive(ctx['se'])
+        zipdump = create_memdump_archive(ctx['se'], begin)
         path = os.path.join(tempfile.mkdtemp(), hex(begin) + '.zip')
         with open(path, 'wb') as outfile:
             outfile.write(zipdump)

@@ -318,8 +318,8 @@ def decode_cobaltstrike(self, payload):
 
 
 ##
-# The following two functions are coming from "speakeasy.py"
-# script and are used to dump memory
+# The following two functions are coming directly from "speakeasy.py"
+# script and are used to dump memory. Just some minor mods done.
 ##
 
 def get_memory_dumps(self) -> tuple:
@@ -342,7 +342,7 @@ def get_memory_dumps(self) -> tuple:
         yield (tag, base, size, is_free, proc, data)
 
 
-def create_memdump_archive(self) -> bytes:
+def create_memdump_archive(self, eip) -> bytes:
     """
     Creates a memory dump archive package of the emulated sample.
     The archive contains a manifest that can be used to match memory chunk
@@ -376,7 +376,7 @@ def create_memdump_archive(self) -> bytes:
                 continue
 
             manifest.append({'pid': pid, 'process_name': path, 'arch': arch,
-                             'memory_blocks': memory_blocks})
+                             'dumped_at': hex(eip), 'memory_blocks': memory_blocks})
             for block in self.get_memory_dumps():
 
                 tag, base, size, is_free, _proc, data = block
@@ -404,7 +404,7 @@ def create_memdump_archive(self) -> bytes:
                 zf.writestr(file_name, data)
 
         manifest = json.dumps(manifest, indent=4, sort_keys=False)
-        zf.writestr('speakeasy_manifest.json', manifest)
+        zf.writestr('manifest.json', manifest)
 
     return _zip.getvalue()
 
