@@ -11,7 +11,6 @@ from colorama import Fore, Back, Style
 
 version = '0.4.3'
 
-
 class RewSploit(cmd2.Cmd):
     """ REW-sploit """
 
@@ -109,6 +108,8 @@ class RewSploit(cmd2.Cmd):
                                         default=False)
     emulate_payload_parser.add_argument('-E', '--exportname', type=ascii, help='DLL Export to emulate',
                                         default=None, metavar='<DLLExportame>')
+    emulate_payload_parser.add_argument('-D', '--dump', type=ascii, help='Dumps the entire process memory when <Address> (in hex) is reached.',
+                                        default=None, metavar='0x<Address>')
 
     @cmd2.with_category(REWSPLOIT_CATEGORY)
     @cmd2.with_argparser(emulate_payload_parser)
@@ -123,7 +124,8 @@ class RewSploit(cmd2.Cmd):
                                            debug=args.debug, fixups=args.fixups,
                                            unhook=args.unhook, thread=args.thread,
                                            writefile=args.writefile, writemem=args.writemem,
-                                           overrideproc=args.overrideproc, exportname=args.exportname)
+                                           overrideproc=args.overrideproc, exportname=args.exportname,
+                                           dumpmem=args.dump)
         return
 
     #######################################

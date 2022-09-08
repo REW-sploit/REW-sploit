@@ -46,6 +46,7 @@ debug = 0
 enable_fixups = True
 donut_stub = False
 enable_unhook = None
+dumpmem_at = None
 mem_chunk = {}
 
 rc4_key = b''
@@ -390,7 +391,7 @@ def hook_code_32(emu, begin, end, ctx):
         elif enable_unhook == begin:
             enable_unhook = None
             print(Fore.GREEN + '[+] Hook Enabled' + Style.RESET_ALL)
-            # Set entry-point when hoos starts, needed for fixups
+            # Set entry-point when hook starts, needed for fixups
             cfg.entry_point = begin
         else:
             return
@@ -398,6 +399,7 @@ def hook_code_32(emu, begin, end, ctx):
     global rc4_key
     global enable_fixups
     global donut_stub
+    global dumpmem_at
 
     # Get cmd2 obj for poutput
     cmd2 = ctx['cmd2']
@@ -407,6 +409,15 @@ def hook_code_32(emu, begin, end, ctx):
     opcodes = int(emu.mem_read(begin, end).hex(), 16)
     opcodes_buffer.append(emu.mem_read(begin, end))
     opcodes_data = b''.join(opcodes_buffer)
+
+    if dumpmem_at == begin:
+        zipdump = create_memdump_archive(ctx['se'])
+        path = os.path.join(tempfile.mkdtemp(), hex(begin) + '.zip')
+        with open(path, 'wb') as outfile:
+            outfile.write(zipdump)
+
+        cmd2.poutput(Fore.MAGENTA + '[+] Dumping process memory at address 0x%x' % (begin) +
+                     '( complete dump saved in ' + path + ' )' + Style.RESET_ALL)
 
     if enable_fixups == True:
         fixups_unicorn(emu, begin, end, mnem, op, 'x86', cfg.entry_point)
@@ -542,6 +553,7 @@ def hook_code_64(emu, begin, end, ctx):
     global rc4_key
     global enable_fixups
     global donut_stub
+    global dumpmem_at
 
     # Get cmd2 obj for poutput
     cmd2 = ctx['cmd2']
@@ -551,6 +563,15 @@ def hook_code_64(emu, begin, end, ctx):
     opcodes = int(emu.mem_read(begin, end).hex(), 16)
     opcodes_buffer.append(emu.mem_read(begin, end))
     opcodes_data = b''.join(opcodes_buffer)
+
+    if dumpmem_at == begin:
+        zipdump = create_memdump_archive(ctx['se'])
+        path = os.path.join(tempfile.mkdtemp(), hex(begin) + '.zip')
+        with open(path, 'wb') as outfile:
+            outfile.write(zipdump)
+
+        cmd2.poutput(Fore.MAGENTA + '[+] Dumping process memory at address 0x%x' % (begin) +
+                     '( complete dump saved in ' + path + ' )' + Style.RESET_ALL)
 
     if enable_fixups == True:
         fixups_unicorn(emu, begin, end, mnem, op, 'x64', cfg.entry_point)
@@ -671,6 +692,7 @@ def start_speakeasy(self, kwargs, cfg):
     global enable_fixups
     global enable_unhook
     global donut_stub
+    global dumpmem_at
 
     ip = kwargs['ip'].replace('\'', '')
     port = kwargs['port']
@@ -685,6 +707,7 @@ def start_speakeasy(self, kwargs, cfg):
     writemem = kwargs['writemem']
     overrideproc = kwargs['overrideproc']
     exportname = kwargs['exportname']
+    dumpmem = kwargs['dumpmem']
 
     debug = dbg
     enable_fixups = fixups
@@ -698,7 +721,14 @@ def start_speakeasy(self, kwargs, cfg):
             enable_unhook = int(unhook.replace('\'', ''), base=16)
         except:
             self.poutput(
-                Fore.RED + '[!] Invalid address (must be Hex)' + Style.RESET_ALL)
+                Fore.RED + '[!] Invalid unhook address (must be Hex)' + Style.RESET_ALL)
+            return
+    if dumpmem != None:
+        try:
+            dumpmem_at = int(dumpmem.replace('\'', ''), base=16)
+        except:
+            self.poutput(
+                Fore.RED + '[!] Invalid dump address (must be Hex)' + Style.RESET_ALL)
             return
 
     logger = get_logger()
@@ -715,11 +745,11 @@ def start_speakeasy(self, kwargs, cfg):
     if arch == 'x86':
         arch = e_arch.ARCH_X86
         # Set hooks
-        se.add_code_hook(hook_code_32, ctx={'cmd2': self})
+        se.add_code_hook(hook_code_32, ctx={'cmd2': self, 'se': se})
     elif arch in ('x64', 'amd64'):
         arch = e_arch.ARCH_AMD64
         # Set hooks
-        se.add_code_hook(hook_code_64, ctx={'cmd2': self})
+        se.add_code_hook(hook_code_64, ctx={'cmd2': self, 'se': se})
     else:
         self.poutput(
             Fore.RED + '[!] Unsupported architecture' + Style.RESET_ALL)
@@ -759,6 +789,7 @@ def start_speakeasy(self, kwargs, cfg):
 
     # Reset flags and vars for next emulation
     enable_unhook = None
+    dumpmem_at = None
     donut_stub = False
     debug = 0
     mem_chunk = {}
