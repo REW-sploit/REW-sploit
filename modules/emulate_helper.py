@@ -11,9 +11,12 @@ import re
 import os
 import pefile
 import struct
+import json
+import zipfile
 from Crypto.Cipher import ARC4
 from colorama import Fore, Back, Style
 from colorama import init
+from io import BytesIO
 
 import speakeasy
 import speakeasy.winenv.arch as e_arch
@@ -312,3 +315,98 @@ def decode_cobaltstrike(self, payload):
     if config:
         for key in config:
             print('    ', key, '->', config[key])
+
+
+##
+# The following two functions are coming directly from "speakeasy.py"
+# script and are used to dump memory. Just some minor mods done.
+##
+
+def get_memory_dumps(self) -> tuple:
+    """
+    Returns all memory contents along with context information
+
+    return:
+        A generator of tuples of all valid memory with context
+    """
+    for mm in self.emu.get_mem_maps():
+        base = mm.get_base()
+        size = mm.get_size()
+        tag = mm.get_tag()
+        proc = mm.get_process()
+        is_free = mm.is_free()
+        try:
+            data = self.emu.mem_read(base, size)
+        except Exception:
+            continue
+        yield (tag, base, size, is_free, proc, data)
+
+
+def create_memdump_archive(self, eip) -> bytes:
+    """
+    Creates a memory dump archive package of the emulated sample.
+    The archive contains a manifest that can be used to match memory chunk
+    metadata with the dumped binary memory files.
+
+    return:
+        Bytes object containing a zip of all memory
+    """
+    manifest = []
+    _zip = BytesIO()
+
+    loaded_bins = [os.path.splitext(os.path.basename(b))[0]
+                   for b in self.loaded_bins]
+
+    with zipfile.ZipFile(_zip, mode="w", compression=zipfile.ZIP_DEFLATED) as zf:
+        procs = []
+        [procs.append(block[4]) for block in self.get_memory_dumps()
+         if block[4] not in procs]
+
+        for process in procs:
+            memory_blocks = []
+            arch = self.emu.get_arch()
+            if arch == e_arch.ARCH_X86:
+                arch = 'x86'
+            else:
+                arch = 'amd64'
+
+            if process:
+                pid = process.get_pid()
+                path = process.get_process_path()
+            else:
+                continue
+
+            manifest.append({'pid': pid, 'process_name': path, 'arch': arch,
+                             'dumped_at': hex(eip), 'memory_blocks': memory_blocks})
+            for block in self.get_memory_dumps():
+
+                tag, base, size, is_free, _proc, data = block
+
+                if not tag:
+                    continue
+                if _proc != process:
+                    continue
+                # Ignore emulator noise such as structures created by the emulator, or
+                # modules that were loaded
+                if tag and tag.startswith('emu') and not tag.startswith('emu.shellcode.'):
+                    bns = [b for b in loaded_bins if b in tag]
+                    if not len(bns):
+                        continue
+
+                h = hashlib.sha256()
+                h.update(data)
+                _hash = h.hexdigest()
+
+                file_name = '%s.mem' % (tag)
+
+                memory_blocks.append({'tag':  tag, 'base': hex(base), 'size': hex(size),
+                                      'is_free': is_free, 'sha256': _hash,
+                                      'file_name': file_name})
+                zf.writestr(file_name, data)
+
+        manifest = json.dumps(manifest, indent=4, sort_keys=False)
+        zf.writestr('manifest.json', manifest)
+
+    return _zip.getvalue()
+
+# End of memory dump functions
