@@ -10,7 +10,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 WORKDIR /app
 COPY requirements.txt .
 RUN apt-get update -y && \
-    apt-get install -y cpp gcc swig libssl-dev libpcap0.8-dev git && \
+    apt-get install -y cpp gcc swig libssl-dev libpcap0.8-dev git build-essential && \
     python -m venv .venv && \
     .venv/bin/pip install --no-cache-dir -r requirements.txt && \
     find .venv \( -type d -a -name test -o -name tests -o -name __pycache__ \) -o \( -type f -a -name '*.pyc' -o -name '*.pyo' \) -exec rm {} \;
