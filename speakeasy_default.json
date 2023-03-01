@@ -18,10 +18,11 @@
     },
 
     "os_ver": {
-            "name": "windows",
-            "major": 6,
-            "minor": 1,
-            "build": 7601
+        "name": "windows",
+        "major": 10,
+        "minor": 0,
+        "release": 1703,
+        "build": 15063
     },
 
     "current_dir": "C:\\Windows\\system32",
