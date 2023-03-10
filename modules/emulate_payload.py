@@ -787,6 +787,15 @@ def start_speakeasy(self, kwargs, cfg):
     elif code_type == 1:
         start_exe(self, payload, se, arch)
 
+    # Dump dropped files if any
+    data = se.create_file_archive()
+    if data:
+        path = os.path.join(tempfile.mkdtemp(), 'dropped.zip')
+        with open(path, 'wb') as f:
+            f.write(data)
+        self.poutput(Fore.MAGENTA + '[+] Dropped files saved in ' + path
+                     + Style.RESET_ALL)
+
     # Clean up logger handlers to avoid conflicts
     for hndl in logger.handlers:
         logger.removeHandler(hndl)
