@@ -463,6 +463,11 @@
                     "path": "C:\\Windows\\system32\\NETAPI32.dll"
                 },
                 {
+                    "name": "combase",
+                    "base_addr": "0x54600000",
+                    "path": "C:\\Windows\\system32\\combase.dll"
+                },
+                {
                     "name": "comctl32",
                     "base_addr": "0x5f500000",
                     "path": "C:\\Windows\\system32\\comctl32.dll"
