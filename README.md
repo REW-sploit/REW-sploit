@@ -108,7 +108,13 @@ wininet.dll
 
 in the `Speakeasy` folder `winenv/decoys/amd64` and/or `winenv/decoys/x86` (see [Speakeasy](https://github.com/fireeye/speakeasy#readme) README for details). If you don't need them, don't leave the DLLs there, in other case they can slow down emulation.
 
+For `Donut` 1.0 you may want to add even the following DLLs
 
+```
+combase.dll
+shell32.dll
+ntdll.dll
+```
 
 ##  EgeBalci/sgn
 
