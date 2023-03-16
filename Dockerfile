@@ -5,7 +5,7 @@
 # To Run:
 #       sudo docker run --rm -it --name rew-sploit -v /tmp:/tmp rew-sploit/rew-sploit
 #
-FROM python:3.9-slim AS builder
+FROM python:3.11-slim AS builder
 ENV DEBIAN_FRONTEND=noninteractive
 WORKDIR /app
 COPY requirements.txt .
@@ -15,7 +15,7 @@ RUN apt-get update -y && \
     .venv/bin/pip install --no-cache-dir -r requirements.txt && \
     find .venv \( -type d -a -name test -o -name tests -o -name __pycache__ \) -o \( -type f -a -name '*.pyc' -o -name '*.pyo' \) -exec rm {} \;
 
-FROM python:3.9-slim
+FROM python:3.11-slim
 ENV DEBIAN_FRONTEND=noninteractive
 WORKDIR /app
 COPY --from=builder /app .
