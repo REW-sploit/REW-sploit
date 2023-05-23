@@ -2,7 +2,7 @@ colorama==0.4.4
 scapy==2.4.5
 urllib3==1.26.6
 netstruct==1.1.2
-requests==2.26.0
+requests==2.31.0
 yara_python==4.0.4
 cmd2==2.3.3
 git+https://github.com/mandiant/speakeasy@master
