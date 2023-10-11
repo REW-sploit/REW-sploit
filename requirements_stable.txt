@@ -1,6 +1,6 @@
 colorama==0.4.4
 scapy==2.4.5
-urllib3==1.26.6
+urllib3==1.26.17
 netstruct==1.1.2
 requests==2.31.0
 yara_python==4.0.4
