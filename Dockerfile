@@ -21,9 +21,9 @@ WORKDIR /app
 COPY --from=builder /app .
 COPY . /app
 RUN apt-get update -y && \
-    apt-get install -y yara tcpdump && \
+    apt-get install -y yara tcpdump libpcre3-dev && \
     ./.venv/bin/python apply_patch.py -f && \
-    ln -s /usr/local/lib/python3.9/site-packages/usr/local/lib/libyara.so /usr/local/lib/libyara.so && \
+    ln -s /app/.venv/lib/python3.11/site-packages/app/.venv/lib/libyara.so /app/.venv/lib/ && \
     apt-get autoremove -y && \
     apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 CMD [ "/app/.venv/bin/python", "rew-sploit.py"]
